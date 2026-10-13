@@ -26,4 +26,4 @@ TM Visuals — Photography and Film business,located in jozi ,represented by Tsh
 This repository contains the Flutter mobile application for the Photographer Website & Client Management Plartform.
 
 ## Current Project Stage
-Phase 2 - System Design and Interface prototype design.
+Phase 2 - System Design and Interface prototype design
