@@ -23,7 +23,7 @@ This project is being developed as part of the ITC327W Work-Integrated Learning 
 TM Visuals — Photography and Film business, represented by Tshedza Mulaudzi.
 
 ## Repository Structure
-This repository contains the Flutter mobile application for the Photographer Website & Client Management Platform.
+This repository contains the Flutter mobile application for the Photographer Website & Client Management Plartform.
 
 ## Current Project Stage
 Phase 2 - System Design and Interface prototype design
