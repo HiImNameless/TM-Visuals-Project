@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "3uxNJj/ghgc=",
+  "dgSpecHash": "YelC893pc7M=",
   "success": true,
-  "projectFilePath": "C:\\Users\\kamoh\\OneDrive - Central University of Technology Free State\\TM Visuals Repo\\TM Visuals\\TM-Visuals-ASPNET-Website\\TMVisualsWebApp\\TMVisualsWebApp.csproj",
+  "projectFilePath": "T:\\TM-Visuals-Project\\TM-Visuals-ASPNET-Website\\TMVisualsWebApp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\kamoh\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\kamoh\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

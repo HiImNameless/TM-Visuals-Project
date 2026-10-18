@@ -5171,11 +5171,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\kamoh\\OneDrive - Central University of Technology Free State\\TM Visuals Repo\\TM Visuals\\TM-Visuals-ASPNET-Website\\TMVisualsWebApp\\TMVisualsWebApp.csproj",
+      "projectUniqueName": "T:\\TM-Visuals-Project\\TM-Visuals-ASPNET-Website\\TMVisualsWebApp.csproj",
       "projectName": "TMVisualsWebApp",
-      "projectPath": "C:\\Users\\kamoh\\OneDrive - Central University of Technology Free State\\TM Visuals Repo\\TM Visuals\\TM-Visuals-ASPNET-Website\\TMVisualsWebApp\\TMVisualsWebApp.csproj",
+      "projectPath": "T:\\TM-Visuals-Project\\TM-Visuals-ASPNET-Website\\TMVisualsWebApp.csproj",
       "packagesPath": "C:\\Users\\kamoh\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\kamoh\\OneDrive - Central University of Technology Free State\\TM Visuals Repo\\TM Visuals\\TM-Visuals-ASPNET-Website\\TMVisualsWebApp\\obj\\",
+      "outputPath": "T:\\TM-Visuals-Project\\TM-Visuals-ASPNET-Website\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
