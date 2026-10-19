@@ -1,7 +1,12 @@
-# Environment variables and sercrets
+# Environment variables and secrets
 .env/
 *.env/
 
 #Visual Studio folders to ignore
 .vs/
+
+# .NET build output
+**/bin/
+**/obj/
+
 
