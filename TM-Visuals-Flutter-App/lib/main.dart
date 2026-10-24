@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'viewmodels/portfolio_view_model.dart';
 import 'routes/route_manager.dart';
 import 'viewmodels/admin_profile_viewmodel.dart';
@@ -29,9 +30,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<PortfolioViewModel>(
-          create: (_) => PortfolioViewModel(),
-        ),
+        ChangeNotifierProvider(create: (_) => PortfolioViewModel()),
         ChangeNotifierProvider(create: (_) => AdminProfileViewModel()),
         ChangeNotifierProvider(create: (_) => InvoiceListViewModel()),
         ChangeNotifierProvider(create: (_) => AdminSettingsViewModel()),
@@ -40,7 +39,7 @@ class MyApp extends StatelessWidget {
         title: 'TM Visuals',
         debugShowCheckedModeBanner: false,
         theme: ThemeData.dark(),
-        initialRoute: Routes.portfolioContent,
+        initialRoute: RouteManager.portfolioContent,
         routes: {
           '/admin-profile': (context) => AdminProfileScreen(),
           '/invoices': (context) => InvoiceListScreen(),

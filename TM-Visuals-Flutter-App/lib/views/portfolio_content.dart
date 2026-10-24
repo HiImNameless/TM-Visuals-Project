@@ -278,9 +278,9 @@ class _PortfolioContentScreenState extends State<PortfolioContentScreen> {
                                 ),
                                 items: vm.categories.map((category) {
                                   return DropdownMenuItem<String>(
-                                    value: category['category_id'].toString(),
+                                    value: category.id,
                                     child: Text(
-                                      category['category_name'].toString(),
+                                      category.name,
                                       style: const TextStyle(
                                         color: Colors.black,
                                         fontSize: 13,

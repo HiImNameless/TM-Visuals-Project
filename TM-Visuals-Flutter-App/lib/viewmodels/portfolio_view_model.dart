@@ -1,3 +1,7 @@
+
+
+
+
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,7 +30,7 @@ class PortfolioViewModel extends ChangeNotifier {
     'mov': 'video/quicktime',
   };
 
-  List<Map<String, dynamic>> categories = [];
+  List<PortfolioCategory> categories = [];
   String? selectedCategoryId;
   XFile? selectedFile;
   int? selectedFileBytes;
@@ -61,8 +65,17 @@ class PortfolioViewModel extends ChangeNotifier {
     debugPrint('Portfolio error: $error');
 
     if (error is PortfolioError) return error.message;
-    if (error is PostgrestException && error.code == '42501') {
-      return 'You do not have permission to do that.';
+    if (error is PostgrestException) {
+      switch (error.code) {
+        case '42501':
+          return 'You do not have permission to do that.';
+        case '23505':
+          return 'A record with the same information already exists.';
+        case '23503':
+          return 'A related record could not be found.';
+        case '22P02':
+          return 'One of the values provided is invalid.';
+      }
     }
 
     if (error is StorageException) {
@@ -85,7 +98,10 @@ class PortfolioViewModel extends ChangeNotifier {
     await controller.dispose();
   }
 
-  Future<void> loadVideoPreview(XFile file, {void Function(String)? onError}) async {
+  Future<void> loadVideoPreview(
+    XFile file, {
+    void Function(String)? onError,
+  }) async {
     isVideoLoading = true;
     notifyListeners();
 
@@ -125,15 +141,17 @@ class PortfolioViewModel extends ChangeNotifier {
   }
 
   Future<void> loadCategories({void Function(String)? onError}) async {
+    isLoadingCategories = true;
+    notifyListeners();
+
     try {
       categories = await _service.fetchCategories();
-      isLoadingCategories = false;
-      notifyListeners();
     } catch (e) {
-      isLoadingCategories = false;
-      notifyListeners();
       onError?.call('Could not load categories. Please try again.');
       debugPrint('Load categories failed: $e');
+    } finally {
+      isLoadingCategories = false;
+      notifyListeners();
     }
   }
 
@@ -148,24 +166,32 @@ class PortfolioViewModel extends ChangeNotifier {
       return;
     }
 
+    if (name.length > maxCategoryLength) {
+      onMessage(
+        'Category name is too long. Maximum length is $maxCategoryLength characters.',
+      );
+      return;
+    }
+
     final existingIndex = categories.indexWhere(
-      (c) => c['category_name'].toString().toLowerCase() == name.toLowerCase(),
+      (c) => c.name.toLowerCase() == name.toLowerCase(),
     );
 
     if (existingIndex != -1) {
-      selectedCategoryId = categories[existingIndex]['category_id'].toString();
+      selectedCategoryId = categories[existingIndex].id;
+
       notifyListeners();
-      onMessage('This category already exists.');
-      return;
+
+      throw const DuplicateCategoryError();
     }
 
     try {
       final inserted = await _service.insertCategory(name);
 
-      categories.add(inserted);
+      categories.add(PortfolioCategory.fromMap(inserted));
       categories.sort(
-        (a, b) => a['category_name'].toString().toLowerCase().compareTo(
-          b['category_name'].toString().toLowerCase(),
+        (a, b) => a.name.toLowerCase().compareTo(
+          b.name.toLowerCase(),
         ),
       );
 
@@ -173,19 +199,16 @@ class PortfolioViewModel extends ChangeNotifier {
       notifyListeners();
 
       onMessage('Category added successfully!');
-    } on PostgrestException catch (e) {
-      if (e.code == '23505') {
-        onMessage('This category already exists.');
-        await loadCategories(onError: onMessage);
-      } else {
-        onMessage(friendlyError(e));
-      }
+    } on DuplicateCategoryError catch (e) {
+      onMessage(e.message);
     } catch (e) {
       onMessage(friendlyError(e));
     }
   }
 
-  Future<void> pickPortfolioContent({required void Function(String) onMessage}) async {
+  Future<void> pickPortfolioContent({
+    required void Function(String) onMessage,
+  }) async {
     try {
       final XFile? file = await picker.pickMedia();
 
@@ -193,7 +216,8 @@ class PortfolioViewModel extends ChangeNotifier {
 
       final extension = extensionFor(file);
       final allowed =
-          imageTypes.containsKey(extension) || videoTypes.containsKey(extension);
+          imageTypes.containsKey(extension) ||
+          videoTypes.containsKey(extension);
 
       if (!allowed) {
         onMessage('Unsupported file type. Use JPG, PNG, WebP, MP4 or MOV.');
@@ -253,6 +277,13 @@ class PortfolioViewModel extends ChangeNotifier {
       return;
     }
 
+    if (title.length > maxTitleLength) {
+      onMessage(
+        'Title is too long. Maximum length is $maxTitleLength characters.',
+      );
+      return;
+    }
+
     isUploading = true;
     notifyListeners();
 
@@ -273,8 +304,9 @@ class PortfolioViewModel extends ChangeNotifier {
         );
       }
 
-      final String mediaType =
-          videoTypes.containsKey(extension) ? 'video' : 'image';
+      final String mediaType = videoTypes.containsKey(extension)
+          ? 'video'
+          : 'image';
 
       final fileData = selectedFileData;
 
@@ -331,7 +363,11 @@ class PortfolioViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    videoController?.dispose();
+    final controller = videoController;
+    videoController = null;
+
+    controller?.dispose();
+
     super.dispose();
   }
 }
