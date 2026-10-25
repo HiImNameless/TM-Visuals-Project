@@ -3,14 +3,14 @@ import 'package:provider/provider.dart';
 import '/views/portfolio_content.dart';
 import '/viewmodels/portfolio_view_model.dart';
 
-class Routes {
-  static const String portfolioContent = '/portfolio-content';
-}
-
 class RouteManager {
+  static const String portfolioContent = '/portfolio-content';
+
+
+
   static Route<dynamic> getRoute(RouteSettings settings) {
     switch (settings.name) {
-      case Routes.portfolioContent:
+      case portfolioContent:
         return MaterialPageRoute(
           builder: (_) => ChangeNotifierProvider(
             create: (_) => PortfolioViewModel(),
