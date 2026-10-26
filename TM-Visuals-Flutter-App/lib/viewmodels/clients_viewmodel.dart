@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/clients_modela.dart';
+import '../models/clients_model.dart';
 
 class ClientsViewModel extends ChangeNotifier {
-
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -10,35 +9,35 @@ class ClientsViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   // list of clients
-  final List<Client> _clients = [
-    Client(
+  final List<Clients> _clients = [
+    Clients(
       name: "Aubrey jones",
       previousBookings: "Party",
-      lastBooking: "Party"
+      lastBooking: "Party",
     ),
-    Client(
-      name:"Sergio Kitchens",
+    Clients(
+      name: "Sergio Kitchens",
       previousBookings: "Graduation, Wedding",
-      lastBooking: "Wedding"
+      lastBooking: "Wedding",
     ),
   ];
 
   //get clients
-  List<Client> get clients => _clients;
+  List<Clients> get clients => _clients;
 
   //fetch clients
   Future<void> fetchClients() async {
-   _isLoading = true;
+    _isLoading = true;
     notifyListeners();
 
     await Future.delayed(const Duration(seconds: 1));
 
     _isLoading = false;
     notifyListeners();
-  } 
+  }
 
   //add client
-  Future<void> addClient(Clients client) async {
+  Future<bool> addClient(Clients client) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -46,19 +45,17 @@ class ClientsViewModel extends ChangeNotifier {
     await Future.delayed(const Duration(seconds: 1));
 
     //check if client already exists
-    final alreadyExists = _clients.any(
-      (c) => c.name == client.name,
-    );
-     if (alreadyExists) {
+    final alreadyExists = _clients.any((c) => c.name == client.name);
+    if (alreadyExists) {
       _errorMessage = 'You Already added this client';
       _isLoading = false;
       notifyListeners();
       return false;
-     }
+    }
 
-     _clients.add(client);
-     _isLoading = false;
-     notifyListeners();
-     return true;
+    _clients.add(client);
+    _isLoading = false;
+    notifyListeners();
+    return true;
   }
 }
