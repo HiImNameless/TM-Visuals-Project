@@ -1,0 +1,36 @@
+﻿@model TMVisualsWebApp.Models.Booking
+@{
+    ViewData["Title"] = "Booking Status";
+}
+<div class="booking-page">
+
+    <div class="info-card">
+        <h4>Booking Info</h4>
+        <div class="info-row"><span>Name</span><span>@Model.Name</span></div>
+        <div class="info-row"><span>Phone Number</span><span>@Model.Phone</span></div>
+        <div class="info-row"><span>Email Address</span><span>@Model.Email</span></div>
+        <div class="info-row"><span>Services</span><span>@Model.Service</span></div>
+        <div class="info-row"><span>Type of Event</span><span>@Model.EventType</span></div>
+        <div class="info-row"><span>Number of people</span><span>@Model.NumberOfPeople</span></div>
+        <div class="info-row"><span>Location</span><span>@Model.Location</span></div>
+        <div class="info-row"><span>Date</span><span>@Model.Date</span></div>
+        <div class="info-row"><span>Start Time</span><span>@Model.StartTime</span></div>
+        <div class="info-row"><span>Finish Time</span><span>@Model.FinishTime</span></div>
+    </div>
+
+    <div class="status-row">
+        <span>Booking Status</span>
+        <span class="status-btn">@Model.Status</span>
+    </div>
+
+    <div class="action-row">
+        <a class="action-btn cancel" href="#">Cancel booking</a>
+        <a class="action-btn back" asp-controller="Home" asp-action="Profile">Back to My Profile</a>
+    </div>
+
+    <div class="disclaimer">
+        Disclaimer: Bookings require a deposit which makes 50% of the total amount.
+        This amount is not refunded when you cancel booking.
+    </div>
+
+</div>

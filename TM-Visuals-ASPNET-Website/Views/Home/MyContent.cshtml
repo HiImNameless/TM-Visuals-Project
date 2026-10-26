@@ -1,0 +1,25 @@
+﻿@model List<TMVisualsWebApp.Models.ContentItem>
+@{
+    ViewData["Title"] = "My Content";
+}
+
+<h2 class="mb-4">My Content</h2>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <p class="mb-1"><strong>Date:</strong> @item.Date.ToString("dd MMM yyyy")</p>
+                    <p class="mb-1"><strong>Time:</strong> @item.Time.ToString(@"hh\:mm")</p>
+                    <p class="mb-1"><strong>Hours:</strong> @item.Hours</p>
+                    <p class="mb-3"><strong>Location:</strong> @item.Location</p>
+                    <a class="btn btn-primary" href="@item.DownloadUrl">Download Content</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<a asp-action="Profile" class="btn btn-link">Back to Profile</a>
