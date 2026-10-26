@@ -1,4 +1,3 @@
-
 class AddInvoiceModel {
   final String invoiceId;
   final String adminId;
@@ -39,4 +38,9 @@ class AddInvoiceModel {
       'created_at': createdAt?.toIso8601String(),
     };
   }
+}
+
+class InvoiceBooking {
+  const InvoiceBooking({required this.id, required this.label});
+  final String id, label;
 }

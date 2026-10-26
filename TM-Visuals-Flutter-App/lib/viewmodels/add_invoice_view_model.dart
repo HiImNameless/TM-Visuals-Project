@@ -1,71 +1,153 @@
 import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
 import '../models/add_invoice_model.dart';
 import '../services/add_invoice_service.dart';
 
 class AddInvoiceViewModel extends ChangeNotifier {
-  AddInvoiceViewModel({
-    AddInvoiceService? service,
-  }) : _service = service ?? AddInvoiceService();
+  AddInvoiceViewModel({InvoiceDataSource? service, String? initialBookingId})
+    : service = service ?? AddInvoiceService(),
+      bookingId = initialBookingId;
+  final InvoiceDataSource service;
+  List<InvoiceBooking> bookings = [];
+  String? bookingId, fileName, errorMessage, loadError;
+  String reference = '';
+  Uint8List? _bytes;
+  String? _invoiceId;
+  AddInvoiceModel? invoice;
+  bool isLoading = false,
+      loadingBookings = true,
+      locked = false,
+      _uncertain = false,
+      _disposed = false;
+  void _changed() {
+    if (!_disposed) notifyListeners();
+  }
 
-  final AddInvoiceService _service;
+  Future<void> loadBookings() async {
+    loadingBookings = true;
+    loadError = null;
+    _changed();
+    try {
+      final result = await service.loadBookings();
+      if (!_disposed) bookings = result;
+    } catch (e) {
+      if (!_disposed) loadError = e.toString();
+    } finally {
+      if (!_disposed) {
+        loadingBookings = false;
+        _changed();
+      }
+    }
+  }
 
-  bool _isLoading = false;
-  String? _errorMessage;
-  AddInvoiceModel? _invoice;
+  /// Resume unresolved attempts for this authenticated app session.
+  void prepareForBooking(String? initialBookingId) {
+    if (locked && invoice == null) return;
+    bookingId = initialBookingId;
+    reference = '';
+    fileName = null;
+    _bytes = null;
+    _invoiceId = null;
+    invoice = null;
+    locked = false;
+    _uncertain = false;
+    errorMessage = null;
+  }
 
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
-  AddInvoiceModel? get invoice => _invoice;
+  void selectBooking(String? id) {
+    if (!locked) {
+      bookingId = id;
+      _changed();
+    }
+  }
 
+  void setReference(String value) {
+    if (!locked) reference = value;
+  }
+
+  void selectPdf(String name, Uint8List bytes) {
+    if (locked) return;
+    final validation = validateInvoicePdf(name, bytes);
+    if (validation != null) {
+      fileName = null;
+      _bytes = null;
+      errorMessage = validation;
+      _changed();
+      return;
+    }
+    fileName = name;
+    _bytes = Uint8List.fromList(bytes);
+    errorMessage = null;
+    _changed();
+  }
+
+  Future<bool> submit() async {
+    if (isLoading || invoice != null) return false;
+    if (bookingId == null || bookingId!.isEmpty) {
+      errorMessage = 'Choose a booking.';
+      _changed();
+      return false;
+    }
+    if (reference.trim().isEmpty || reference.trim().length > 120) {
+      errorMessage = 'Enter a reference of 1â€“120 characters.';
+      _changed();
+      return false;
+    }
+    if (_bytes == null) {
+      errorMessage = 'Choose a PDF file.';
+      _changed();
+      return false;
+    }
+    isLoading = true;
+    locked = true;
+    errorMessage = null;
+    _invoiceId ??= const Uuid().v4();
+    _changed();
+    try {
+      final result = await service.uploadInvoice(
+        bookingId: bookingId!,
+        reference: reference.trim(),
+        fileName: fileName!,
+        fileBytes: _bytes!,
+        invoiceId: _invoiceId!,
+        uncertainBefore: _uncertain,
+      );
+      if (!_disposed) invoice = result;
+      return true;
+    } catch (e) {
+      _uncertain = true;
+      if (!_disposed) errorMessage = e.toString();
+      return false;
+    } finally {
+      if (!_disposed) {
+        isLoading = false;
+        _changed();
+      }
+    }
+  }
+
+  // Compatibility entry point for callers of the original owned viewmodel.
   Future<bool> uploadInvoice({
     required String bookingId,
     required String reference,
     required String fileName,
     required Uint8List fileBytes,
   }) async {
-    try {
-      _setLoading(true);
-      _errorMessage = null;
-
-      if (reference.trim().isEmpty) {
-        throw Exception('Reference is required.');
-      }
-
-      if (fileBytes.isEmpty) {
-        throw Exception('Please select a PDF file.');
-      }
-
-      _invoice = await _service.uploadInvoice(
-        bookingId: bookingId,
-        reference: reference.trim(),
-        fileName: fileName,
-        fileBytes: fileBytes,
-      );
-
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      notifyListeners();
-      return false;
-    } finally {
-      _setLoading(false);
-    }
+    if (locked || isLoading) return false;
+    selectBooking(bookingId);
+    setReference(reference);
+    selectPdf(fileName, fileBytes);
+    return submit();
   }
 
   void clearError() {
-    _errorMessage = null;
-    notifyListeners();
+    errorMessage = null;
+    _changed();
   }
 
-  void reset() {
-    _invoice = null;
-    _errorMessage = null;
-    notifyListeners();
-  }
-
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

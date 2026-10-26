@@ -186,7 +186,7 @@ class _ServiceStatusDropdownState extends State<ServiceStatusDropdown> {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: selectedStatus,
+      initialValue: selectedStatus,
       dropdownColor: const Color.fromARGB(255, 46, 46, 46),
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
