@@ -10,3 +10,7 @@
 **/obj/
 
 
+*.cmake
+*.cc
+*.cmake
+*.swift

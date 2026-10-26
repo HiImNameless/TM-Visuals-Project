@@ -10,6 +10,7 @@ import 'viewmodels/admin_settings_viewmodel.dart';
 import 'views/admin_profile_screen.dart';
 import 'views/invoice_list_screen.dart';
 import 'views/admin_settings_screen.dart';
+import 'viewmodels/bookingList_viewmodel.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AdminProfileViewModel()),
         ChangeNotifierProvider(create: (_) => InvoiceListViewModel()),
         ChangeNotifierProvider(create: (_) => AdminSettingsViewModel()),
+        ChangeNotifierProvider(create: (_) => BookingsViewModel()),
       ],
       child: MaterialApp(
         title: 'TM Visuals',
