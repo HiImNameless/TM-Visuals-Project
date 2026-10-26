@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../viewmodels/admin_profile_viewmodel.dart';
 
 class AdminProfileScreen extends StatelessWidget {
+  const AdminProfileScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     var vm = context.watch<AdminProfileViewModel>();
@@ -80,7 +82,7 @@ class AdminProfileScreen extends StatelessWidget {
                       padding:
                           EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.25),
+                        color: Colors.amber.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(vm.user.role,
@@ -265,7 +267,7 @@ class AdminProfileScreen extends StatelessWidget {
                       style: TextStyle(color: Colors.white54, fontSize: 10)),
                   trailing: Switch(
                     value: vm.bookingAlerts,
-                    activeColor: Colors.black,
+                    activeThumbColor: Colors.black,
                     activeTrackColor: Colors.amber,
                     onChanged: (value) {
                       vm.toggleBookingAlerts(value);
