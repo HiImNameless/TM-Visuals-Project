@@ -3,11 +3,44 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TMVisualsWebApp</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - TM Visuals</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/TMVisualsWebApp.styles.css" asp-append-version="true" />
+    <style>
+        body {
+            margin: 0;
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+        }
+
+        .logo {
+            color: #E0C61F;
+            font-size: 20px;
+            line-height: 1.1;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 18px;
+            font-size: 14px;
+        }
+
+        .nav .active {
+            background-color: #E0C61F;
+            color: black;
+            border-radius: 12px;
+            padding: 3px 10px;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -45,11 +78,22 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - TMVisualsWebApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <!-- The one header for every page -->
+    <div class="header">
+        <div class="logo">TM<br />Visuals</div>
+        <div class="nav">
+            <a class="@(page == "Index" ? "active" : "")" asp-controller="Home" asp-action="Index">Home</a>
+            <a class="@(page == "Services" ? "active" : "")" asp-controller="Home" asp-action="Services">Services</a>
+            <a class="@(page == "MyWork" ? "active" : "")" asp-controller="Home" asp-action="MyWork">My Work</a>
+            <a class="@(page == "Profile" ? "active" : "")" asp-controller="Home" asp-action="Profile">Profile</a>
+            <a href="#">Logout</a>
         </div>
-    </footer>
+    </div>
+
+    <main role="main">
+        @RenderBody()
+    </main>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

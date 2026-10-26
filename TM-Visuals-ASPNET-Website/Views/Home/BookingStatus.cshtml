@@ -1,0 +1,111 @@
+﻿@model TMVisualsWebApp.Models.Booking
+@{
+    ViewData["Title"] = "Booking Status";
+}
+
+<style>
+    .booking-page {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 20px 24px;
+    }
+
+    .info-card {
+        background-color: #E0A100;
+        color: black;
+        border-radius: 60px;
+        padding: 40px 50px;
+    }
+
+        .info-card h4 {
+            text-align: center;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        padding: 14px 0 6px 0;
+        border-bottom: 1px solid black;
+    }
+
+    .status-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+    }
+
+    .status-btn {
+        background-color: #FFB400;
+        color: black;
+        padding: 10px 40px;
+        border-radius: 4px;
+    }
+
+    .action-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+    }
+
+    .action-btn {
+        border-radius: 10px;
+        padding: 12px 24px;
+        text-decoration: none;
+        background-color: black;
+    }
+
+    .cancel {
+        border: 1px solid red;
+        color: red;
+    }
+
+    .back {
+        border: 1px solid #E0C61F;
+        color: #E0C61F;
+    }
+
+    .disclaimer {
+        background-color: #5a4300;
+        border-left: 14px solid #E0A100;
+        font-size: 11px;
+        padding: 10px 16px;
+        margin-top: 30px;
+    }
+</style>
+
+<div class="booking-page">
+
+    <div class="info-card">
+        <h4>Booking Info</h4>
+        <div class="info-row"><span>Name</span><span>@Model.Name</span></div>
+        <div class="info-row"><span>Phone Number</span><span>@Model.Phone</span></div>
+        <div class="info-row"><span>Email Address</span><span>@Model.Email</span></div>
+        <div class="info-row"><span>Services</span><span>@Model.Service</span></div>
+        <div class="info-row"><span>Type of Event</span><span>@Model.EventType</span></div>
+        <div class="info-row"><span>Number of people</span><span>@Model.NumberOfPeople</span></div>
+        <div class="info-row"><span>Location</span><span>@Model.Location</span></div>
+        <div class="info-row"><span>Date</span><span>@Model.Date</span></div>
+        <div class="info-row"><span>Start Time</span><span>@Model.StartTime</span></div>
+        <div class="info-row"><span>Finish Time</span><span>@Model.FinishTime</span></div>
+    </div>
+
+    <div class="status-row">
+        <span>Booking Status</span>
+        <span class="status-btn">@Model.Status</span>
+    </div>
+
+    <div class="action-row">
+        <a class="action-btn cancel" href="#">Cancel booking</a>
+        <a class="action-btn back" asp-controller="Home" asp-action="Profile">Back to My Profile</a>
+    </div>
+
+    <div class="disclaimer">
+        Disclaimer: Bookings require a deposit which makes 50% of the total amount.
+        This amount is not refunded when you cancel booking.
+    </div>
+
+</div>
