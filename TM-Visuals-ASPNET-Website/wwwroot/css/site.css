@@ -29,3 +29,181 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+
+/* ---------- Layout (header) ---------- */
+body {
+    margin: 0;
+    background-color: black;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+}
+
+.logo {
+    color: #E0C61F;
+    font-size: 20px;
+    line-height: 1.1;
+}
+
+.nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 18px;
+    font-size: 14px;
+}
+
+.nav .active {
+    background-color: #E0C61F;
+    color: black;
+    border-radius: 12px;
+    padding: 3px 10px;
+}
+
+/* ---------- Profile page ---------- */
+.content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 24px;
+}
+
+.user-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: #E0C61F;
+    color: black;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 14px;
+}
+
+.line {
+    border: none;
+    border-top: 1px solid #6b5f10;
+    margin: 20px 0;
+    opacity: 1;
+}
+
+.bookings {
+    border: 1px solid #E0C61F;
+}
+
+.booking-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #6b5f10;
+}
+
+.status {
+    background-color: #E0C61F;
+    color: black;
+    font-size: 12px;
+    border-radius: 12px;
+    padding: 3px 14px;
+}
+
+.buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 40px;
+}
+
+    .buttons a {
+        flex: 1;
+        text-align: center;
+        background-color: #E0C61F;
+        color: black;
+        text-decoration: none;
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+/* ---------- Booking status page ---------- */
+.booking-page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px 24px;
+}
+
+.info-card {
+    background-color: #E0A100;
+    color: black;
+    border-radius: 60px;
+    padding: 40px 50px;
+}
+
+    .info-card h4 {
+        text-align: center;
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 14px 0 6px 0;
+    border-bottom: 1px solid black;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.status-btn {
+    background-color: #FFB400;
+    color: black;
+    padding: 10px 40px;
+    border-radius: 4px;
+}
+
+.action-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.action-btn {
+    border-radius: 10px;
+    padding: 12px 24px;
+    text-decoration: none;
+    background-color: black;
+}
+
+.cancel {
+    border: 1px solid red;
+    color: red;
+}
+
+.back {
+    border: 1px solid #E0C61F;
+    color: #E0C61F;
+}
+
+.disclaimer {
+    background-color: #5a4300;
+    border-left: 14px solid #E0A100;
+    font-size: 11px;
+    padding: 10px 16px;
+    margin-top: 30px;
+}
