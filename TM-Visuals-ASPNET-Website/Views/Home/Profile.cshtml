@@ -3,76 +3,6 @@
     ViewData["Title"] = "Profile";
 }
 
-<style>
-    .content {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 20px 24px;
-    }
-
-    .user-row {
-        display: flex;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .avatar {
-        width: 52px;
-        height: 52px;
-        border-radius: 50%;
-        background-color: #E0C61F;
-        color: black;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 14px;
-    }
-
-    .line {
-        border: none;
-        border-top: 1px solid #6b5f10;
-        margin: 20px 0;
-        opacity: 1;
-    }
-
-    .bookings {
-        border: 1px solid #E0C61F;
-    }
-
-    .booking-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px;
-        border-bottom: 1px solid #6b5f10;
-    }
-
-    .status {
-        background-color: #E0C61F;
-        color: black;
-        font-size: 12px;
-        border-radius: 12px;
-        padding: 3px 14px;
-    }
-
-    .buttons {
-        display: flex;
-        gap: 16px;
-        margin-top: 40px;
-    }
-
-        .buttons a {
-            flex: 1;
-            text-align: center;
-            background-color: #E0C61F;
-            color: black;
-            text-decoration: none;
-            padding: 14px;
-            border-radius: 12px;
-        }
-</style>
-
 <div class="content">
 
     <h2>My Account</h2>
@@ -104,8 +34,8 @@
     <hr class="line" />
 
     <div class="buttons">
-        <a href="#">My Photos</a>
-        <a href="#">Edit details</a>
+        <a asp-controller="Home" asp-action="MyContent">My Content</a>
+        <a asp-controller="Home" asp-action="EditDetails">Edit Details</a>
     </div>
 
 </div>
