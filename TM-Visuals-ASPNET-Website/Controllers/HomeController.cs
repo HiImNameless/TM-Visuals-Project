@@ -104,5 +104,38 @@ namespace TMVisualsWebApp.Controllers
 
             return View(booking);
         }
+
+
+        private static readonly List<ContentItem> contentItems = new()
+{
+    new ContentItem { Id = 1, Date = new DateTime(2026, 10, 10), Time = new TimeSpan(14, 0, 0), Hours = 3, Location = "Bloemfontein" },
+    new ContentItem { Id = 2, Date = new DateTime(2026, 10, 17), Time = new TimeSpan(9, 30, 0), Hours = 2, Location = "Cape Town" }
+};
+
+        public IActionResult MyContent()
+        {
+            return View(contentItems);
+        }
+
+        [HttpGet]
+        public IActionResult EditDetails()
+        {
+            // Use the same UserProfile object your Profile() action uses
+            var profile = new UserProfile { FullName = "Musa Bonga", Email = "musa@example.com"};
+            return View(profile);
+        }
+
+        [HttpPost]
+        public IActionResult EditDetails(UserProfile model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // TODO: save to the database once Supabase is connected
+            TempData["Message"] = "Details updated.";
+            return RedirectToAction("Profile");
+        }
     }
 }
