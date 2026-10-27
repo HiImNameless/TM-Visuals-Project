@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:photography_flutter_application/models/service_list_model.dart';
+
 import 'package:photography_flutter_application/viewmodels/service_list_viewmodel.dart';
 import 'package:photography_flutter_application/views/add_service.dart';
 import 'package:photography_flutter_application/views/service_details.dart';
@@ -13,8 +13,19 @@ class ServiceList extends StatefulWidget {
 }
 
 class _ServiceListState extends State<ServiceList> {
+  // load the services from Supabase when the screen opens
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ServiceViewModel>().fetchServices();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final vm = context.watch<ServiceViewModel>(); // NEW
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -62,77 +73,56 @@ class _ServiceListState extends State<ServiceList> {
 
                     SizedBox(
                       height: 500,
-                      child:
-                          Selector<ServiceViewModel, List<ServicesListModel>>(
-                            selector: (context, viewModel) =>
-                                viewModel.services,
-                            builder: (context, services, child) {
-                              return ListView.builder(
-                                itemCount: services.length,
-                                itemBuilder: (context, index) {
-                                  final item = services[index];
-                                  return Card(
-                                    color: const Color.fromARGB(
-                                      255,
-                                      20,
-                                      20,
-                                      20,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      side: const BorderSide(
-                                        color: Colors.orange,
-                                      ),
-                                    ),
-                                    child: ListTile(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                ServiceDetailsView(
-                                                  service: item,
-                                                ),
-                                          ),
-                                        );
-                                      },
-                                      title: Padding(
-                                        padding: const EdgeInsets.all(10),
-                                        child: Text(
-                                          item.serviceName,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                      subtitle: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            item.description,
-                                            style: const TextStyle(
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      trailing: Text(
-                                        item.availability,
-                                        style: TextStyle(
-                                          color:
-                                              item.availability == "Available"
-                                              ? Colors.green
-                                              : Colors.orange,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
+
+                      child: ListView.builder(
+                        itemCount: vm.services.length,
+                        itemBuilder: (context, index) {
+                          final item = vm.services[index];
+                          return Card(
+                            color: const Color.fromARGB(255, 20, 20, 20),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: const BorderSide(color: Colors.orange),
+                            ),
+                            child: ListTile(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        ServiceDetailsView(service: item),
+                                  ),
+                                );
+                              },
+                              title: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Text(
+                                  item.serviceName,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.description,
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                              trailing: Text(
+                                item.availability,
+                                style: TextStyle(
+                                  color: item.availability == "Available"
+                                      ? Colors.green
+                                      : Colors.orange,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -161,37 +151,6 @@ class _ServiceListState extends State<ServiceList> {
             ),
           ),
           const SizedBox(height: 15),
-        ],
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.orange,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 28),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book, size: 28),
-            label: "Bookings",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month_outlined, size: 28),
-            label: "Calendar",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person, size: 28),
-            label: "Profile",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.navigation, size: 28),
-            label: "Explore",
-          ),
         ],
       ),
     );

@@ -1,5 +1,8 @@
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:photography_flutter_application/models/service_list_model.dart';
+import 'package:photography_flutter_application/viewmodels/service_list_viewmodel.dart';
 
 class EditServiceView extends StatefulWidget {
   final ServicesListModel service;
@@ -13,6 +16,26 @@ class _EditServiceViewState extends State<EditServiceView> {
   final TextEditingController _serviceNameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
+  late String _selectedAvailability;
+
+  @override
+  void initState() {
+    super.initState();
+    _serviceNameController.text = widget.service.serviceName;
+    _descriptionController.text = widget.service.description;
+    _dateController.text = widget.service.dateTime;
+    _selectedAvailability = widget.service.availability;
+  }
+
+  
+  @override
+  void dispose() {
+    _serviceNameController.dispose();
+    _descriptionController.dispose();
+    _dateController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,7 +115,8 @@ class _EditServiceViewState extends State<EditServiceView> {
                     const SizedBox(height: 4),
                     TextField(
                       controller: _dateController,
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      readOnly: true,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                       decoration: const InputDecoration(
                         hintText: "Text...",
                         hintStyle: TextStyle(color: Colors.grey),
@@ -100,8 +124,10 @@ class _EditServiceViewState extends State<EditServiceView> {
                     ),
 
                     const SizedBox(height: 20),
-                    ServiceStatusDropdown(
+
+                    EditServiceStatusDropdown(
                       initialStatus: widget.service.availability,
+                      onChanged: (value) => _selectedAvailability = value,
                     ),
                     const SizedBox(height: 16),
 
@@ -123,8 +149,29 @@ class _EditServiceViewState extends State<EditServiceView> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                           ),
-                          onPressed: () {
-                            Navigator.pop(context);
+                          //saves to Supabase, then closes
+                          onPressed: () async {
+                            final updated = widget.service.copyWith(
+                              serviceName: _serviceNameController.text.trim(),
+                              description: _descriptionController.text.trim(),
+                              availability: _selectedAvailability,
+                            );
+                            try {
+                              await context
+                                  .read<ServiceViewModel>()
+                                  .editService(updated);
+                              if (context.mounted) {
+                                // close edit AND details, back to the list
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Could not save: $e')),
+                                );
+                              }
+                            }
                           },
                           child: Text("SAVE"),
                         ),
@@ -139,50 +186,27 @@ class _EditServiceViewState extends State<EditServiceView> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.orange,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: Colors.black, size: 30),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book, color: Colors.black),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month, color: Colors.black),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person, color: Colors.black),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.navigation, color: Colors.black),
-            label: " ",
-          ),
-        ],
-      ),
     );
   }
 }
 
-class ServiceStatusDropdown extends StatefulWidget {
-  final String initialStatus;
 
-  const ServiceStatusDropdown({super.key, required this.initialStatus});
+class EditServiceStatusDropdown extends StatefulWidget {
+  final String initialStatus;
+  final ValueChanged<String>? onChanged; // NEW
+
+  const EditServiceStatusDropdown({
+    super.key,
+    required this.initialStatus,
+    this.onChanged, 
+  });
 
   @override
-  State<ServiceStatusDropdown> createState() => _ServiceStatusDropdownState();
+  State<EditServiceStatusDropdown> createState() =>
+      _EditServiceStatusDropdownState();
 }
 
-class _ServiceStatusDropdownState extends State<ServiceStatusDropdown> {
+class _EditServiceStatusDropdownState extends State<EditServiceStatusDropdown> {
   late String selectedStatus;
 
   final List<String> availabilities = ["Available", "Unavailable"];
@@ -198,7 +222,7 @@ class _ServiceStatusDropdownState extends State<ServiceStatusDropdown> {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: selectedStatus,
+      initialValue: selectedStatus, 
       dropdownColor: const Color.fromARGB(255, 46, 46, 46),
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
@@ -219,6 +243,7 @@ class _ServiceStatusDropdownState extends State<ServiceStatusDropdown> {
           setState(() {
             selectedStatus = newStatus;
           });
+          widget.onChanged?.call(newStatus);
         }
       },
     );
