@@ -208,6 +208,81 @@ body {
     margin-top: 30px;
 }
 
+/*Portfolio or My work Page*/
+
+.main-title{
+    font-size:40px;
+    text-align:left;
+    margin-top:40px;
+}
+
+.three-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.card-one {
+    background-color: rgba(219, 143, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 30px 20px;
+    border-radius: 6px;
+    text-align: left;
+}
+.highlited {
+    background-color: #FFB400;
+    border: 1px solid #FFB400;
+    padding: 30px 20px;
+    border-radius: 6px;
+    text-align: left;
+}
+
+.three-cards{
+    border-radius:12px;
+
+}
+.categories-all {
+    margin-top: 30px;
+    display: flex;
+    margin-right: 12px;
+    margin-bottom: 50px;
+    gap: 14px;
+}
+
+.filter-btn{
+    border-radius:6px;
+    background-color:#FFB400;
+    border:none;
+}
+.delivery-note {
+    background-color: #5a4300;
+    border-left: 14px solid #E0A100;
+    font-size: 11px;
+    padding: 10px 16px;
+    margin-top: 30px;
+}
+
+.selected-work-title{
+    margin-top: 40px;
+    text-align: left;
+    font-size:16px;
+}
+
+hr{
+    border: none;
+    height: 4px;
+    background-color: #FFB400;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+.portfolio-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
 /* ---------- ClientContent ---------- */
 body {
     background-color: #000;

@@ -1,5 +1,83 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model List<TMVisualsWebApp.Models.PortfolioItem>
 @{
+    ViewData["Title"] = "Porfolio";
 }
+
+
+<section>
+    <div>
+        <h1 class="main-title">
+            Our Work in Three Words
+        </h1>
+
+        
+        <hr class="divider">
+
+
+        <div class="three-cards">
+            <div class="card-one">
+                <h3>Storytelling</h3>
+                <p>
+                    Every frame is intentionally composed to capture the genuine atmosphere and underlying story of your day.
+                </p>
+            </div>
+
+            <div class="highlited">
+                <h3>
+                    High-Quality
+                </h3>
+                <p>
+                    Proper, clear and beautiful edited photos and videos. Everything looks polished and cinematic, ready to share with the world.
+                </p>
+            </div>
+               
+            <div class="card-one">
+                <h3>Variety</h3>
+                <p>Stunning photos and cinematic video clips, capturing everything from wide room views to intimate moments.</p>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+
+<hr class="divider">
+
+
+<section>
+     <div>
+
+         <div class="selected-work-title">
+             <h1>Selected Work</h1>
+         </div>
+       
+        <div class="categories-all">
+            <button class="filter-btn active">All work</button>
+            <button class="filter-btn">Graduations</button>
+            <button class="filter-btn">Food</button>
+            <button class="filter-btn">Branding</button>
+            <button class="filter-btn">Weddings</button>
+        </div>
+
+       <div class="portfolio-items">
+            @foreach (var item in Model)
+            {
+                <div class="portfolio-card">
+                    <img src="@item.ImageUrl" alt="@item.Title" />
+                    <h4>@item.Title</h4>
+                    <p>@item.Description</p>
+                </div>
+            }
+       </div>
+
+        <div class="delivery-note">
+            Private client delivery. Completed client content is delivered through
+            private Google Drive links and is never shown here.
+        </div>
+
+    </div>
+</section>
+         
+    
+
