@@ -4,41 +4,62 @@
     ViewData["Title"] = "Register";
 }
 
-<h1>Register</h1>
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-brand">TM <span>Visuals</span></div>
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-subtitle">Register to book shoots and receive your content.</p>
 
-<form asp-controller="Account" asp-action="Register" method="post">
-    @Html.AntiForgeryToken()
+        <form asp-controller="Account" asp-action="Register" method="post" novalidate>
+            @Html.AntiForgeryToken()
 
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="auth-alert"></div>
 
-    <div class="mb-3">
-        <label asp-for="Email" class="form-label"></label>
-        <input asp-for="Email" class="form-control" autocomplete="email" />
-        <span asp-validation-for="Email" class="text-danger"></span>
+            <div class="auth-field">
+                <label asp-for="Email" class="auth-label"></label>
+                <input asp-for="Email" class="auth-input" placeholder="you@example.com" autocomplete="email" />
+                <span asp-validation-for="Email" class="auth-error"></span>
+            </div>
+
+            <div class="auth-field">
+                <label asp-for="Password" class="auth-label"></label>
+                <div class="auth-password">
+                    <input asp-for="Password" class="auth-input" placeholder="At least 8 characters" autocomplete="new-password" />
+                    <button type="button" class="auth-toggle" data-toggle-password aria-label="Show or hide password">Show</button>
+                </div>
+                <span class="auth-hint">Use at least 8 characters.</span>
+                <span asp-validation-for="Password" class="auth-error"></span>
+            </div>
+
+            <div class="auth-field">
+                <label asp-for="ConfirmPassword" class="auth-label"></label>
+                <div class="auth-password">
+                    <input asp-for="ConfirmPassword" class="auth-input" placeholder="Repeat your password" autocomplete="new-password" />
+                    <button type="button" class="auth-toggle" data-toggle-password aria-label="Show or hide password">Show</button>
+                </div>
+                <span asp-validation-for="ConfirmPassword" class="auth-error"></span>
+            </div>
+
+            <button type="submit" class="auth-button">Create account</button>
+        </form>
+
+        <p class="auth-switch">
+            Already have an account?
+            <a asp-controller="Account" asp-action="Login">Login here</a>
+        </p>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="Password" class="form-label"></label>
-        <input asp-for="Password" class="form-control" autocomplete="new-password" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="ConfirmPassword" class="form-label"></label>
-        <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
-        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-    </div>
-
-    <p class="mt-3">
-        Already have an account?
-        <a asp-controller="Account" asp-action="Login">Login here</a>
-    </p>
-
-    <button type="submit" class="btn btn-primary">Create account</button>
-
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.querySelectorAll('[data-toggle-password]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var input = button.parentElement.querySelector('input');
+                var showing = input.type === 'text';
+                input.type = showing ? 'password' : 'text';
+                button.textContent = showing ? 'Show' : 'Hide';
+            });
+        });
+    </script>
 }
-
