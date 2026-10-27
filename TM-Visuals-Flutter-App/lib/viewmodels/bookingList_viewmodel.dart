@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:photography_flutter_application/models/booking_list_model.dart';
-//Testing
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:photography_flutter_application/services/repos/bookingListRepo.dart';
-
-//Kamohelo P testing viewmodel for booking list screen
 
 enum LoadState { idle, loading, ready, error }
 
