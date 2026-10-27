@@ -188,6 +188,7 @@ body {
     margin-top: 30px;
 }
 
+<<<<<<< HEAD
 /* ---------- Navbar ---------- */
 .tm-navbar {
     background-color: black;
@@ -317,5 +318,64 @@ body {
 
 .status-cancelled {
     background-color: #d9534f;
+=======
+/* ---------- ClientContent ---------- */
+body {
+    background-color: #000;
+    color: white;
+}
+
+.content-card {
+    background: #2d2d2d;
+    border-radius: 10px;
+    padding: 25px;
+    color: white;
+    min-height: 220px;
+}
+
+.service-badge {
+    background: #5a5252;
+    color: white;
+    border-radius: 20px;
+    padding: 10px 20px;
+    margin-right: 10px;
+}
+
+.btn-download {
+    background: #f6b300;
+    border: none;
+    color: black;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-weight: 500;
+}
+
+    .btn-download:hover {
+        background: #ffcb39;
+    }
+
+.btn-back {
+    border: 1px solid #f6b300;
+    color: #f6b300;
+    text-decoration: none;
+    padding: 12px 30px;
+    border-radius: 20px;
+}
+
+    .btn-back:hover {
+        background: #f6b300;
+        color: black;
+    }
+
+.breadcrumb {
+    background: transparent;
+}
+
+.breadcrumb-item a {
+    color: #bfbfbf;
+}
+
+.breadcrumb-item.active {
+>>>>>>> f43cb7b378ad4b20bd7727e705523e10991089f2
     color: white;
 }
