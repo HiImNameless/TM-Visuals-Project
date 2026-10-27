@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:photography_flutter_application/models/service_list_model.dart';
+import 'package:photography_flutter_application/viewmodels/service_list_viewmodel.dart';
+import 'package:photography_flutter_application/views/edit_service.dart';
 
 class ServiceDetailsView extends StatelessWidget {
   final ServicesListModel service;
@@ -100,21 +103,65 @@ class ServiceDetailsView extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        // CHANGED: EDIT now opens the edit screen
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    EditServiceView(service: service),
+                              ),
+                            );
+                          },
+                          child: const Text("EDIT"),
+                        ),
+                        
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                           ),
-                          onPressed: () {},
-                          child: Text("EDIT"),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.yellow,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Delete service?'),
+                                content: Text(
+                                  'Delete "${service.serviceName}"? This cannot be undone.',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    child: const Text('Delete'),
+                                  ),
+                                ],
+                              ),
+                            );
+                            if (confirm != true || !context.mounted) return;
+
+                            try {
+                              await context
+                                  .read<ServiceViewModel>()
+                                  .deleteService(service);
+                              if (context.mounted) Navigator.pop(context);
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Could not delete: $e'),
+                                  ),
+                                );
+                              }
+                            }
                           },
-                          child: Text("ADD"),
+                          child: const Text("DELETE"),
                         ),
                       ],
                     ),
@@ -126,36 +173,6 @@ class ServiceDetailsView extends StatelessWidget {
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.orange,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: Colors.black, size: 30),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book, color: Colors.black),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month, color: Colors.black),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person, color: Colors.black),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.navigation, color: Colors.black),
-            label: " ",
-          ),
-        ],
       ),
     );
   }

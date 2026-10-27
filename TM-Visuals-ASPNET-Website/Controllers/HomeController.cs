@@ -31,7 +31,7 @@ namespace TMVisualsWebApp.Controllers
                  Name = "Musa Bonga",
                  Phone = "07123456789",
                  Email = "user@email.com",
-                 Service = "Video",
+                 Service = "Videography",
                  EventType = "Birthday Party",
                  NumberOfPeople = 40,
                  Location = "Cape Town",
