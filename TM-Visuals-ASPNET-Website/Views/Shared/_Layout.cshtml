@@ -43,6 +43,10 @@
         </main>
     </div>
 
+    <!--Added to resolve nav errors-->
+    @{
+        var page = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    }
     <!-- The one header for every page -->
     <div class="header">
         <div class="logo">TM<br />Visuals</div>
