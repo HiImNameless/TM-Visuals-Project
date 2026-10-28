@@ -127,11 +127,35 @@ namespace TMVisualsWebApp.Controllers
         }
 
 
-        private static readonly List<ContentItem> contentItems = new()
-{
-    new ContentItem { Id = 1, Date = new DateTime(2026, 10, 10), Time = new TimeSpan(14, 0, 0), Hours = 3, Location = "Bloemfontein" },
-    new ContentItem { Id = 2, Date = new DateTime(2026, 10, 17), Time = new TimeSpan(9, 30, 0), Hours = 2, Location = "Cape Town" }
-};
+        private static readonly List<ClientContent> contentItems = new()
+        {
+            new ClientContent
+            {
+                ContentId = Guid.NewGuid(),
+                BookingId = Guid.NewGuid(),
+                EventType = "Graduation Shoot",
+                Service = new List<string> { "Photography", "Videography" },
+                BookingDate = new DateTime(2026, 12, 25),
+                StartTime = "13:00",
+                EndTime = "17:00",
+                Location = "CUT",
+                DeliveryLink = "https://example.com/download1",
+                AccessStatus = "Available"
+            },
+            new ClientContent
+            {
+                ContentId = Guid.NewGuid(),
+                BookingId = Guid.NewGuid(),
+                EventType = "Wedding Shoot",
+                Service = new List<string> { "Photography", "Videography" },
+                BookingDate = new DateTime(2026, 12, 31),
+                StartTime = "10:00",
+                EndTime = "18:00",
+                Location = "Bloem Hall",
+                DeliveryLink = "https://example.com/download2",
+                AccessStatus = "Available"
+            }
+        };
 
         public IActionResult MyContent()
         {
