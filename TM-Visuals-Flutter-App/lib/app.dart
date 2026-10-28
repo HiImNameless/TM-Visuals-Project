@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
       ChangeNotifierProvider(create: (_) => AdminProfileViewModel()),
       ChangeNotifierProvider(create: (_) => InvoiceListViewModel()),
       ChangeNotifierProvider(create: (_) => AdminSettingsViewModel()),
-      ChangeNotifierProvider(create: (_) => BookingViewModel()),
+      ChangeNotifierProvider(create: (_) => BookingListViewModel()),
       ChangeNotifierProvider(create: (_) => ServiceViewModel()),
     ],
     child: MaterialApp(

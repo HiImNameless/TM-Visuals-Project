@@ -1,5 +1,55 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model List<TMVisualsWebApp.Models.PortfolioItem>
 @{
+    ViewData["Title"] = "My Work";
 }
+
+<div class="work-page">
+    <section>
+        <h1 class="main-title">Our Work in Three Words</h1>
+        <hr class="work-divider" />
+
+        <div class="three-cards">
+            <article class="work-card">
+                <h2>Storytelling</h2>
+                <p>Every frame is composed to capture the genuine atmosphere and story of your day.</p>
+            </article>
+            <article class="work-card work-card-highlight">
+                <h2>High quality</h2>
+                <p>Beautifully edited photos and videos, polished and ready to share.</p>
+            </article>
+            <article class="work-card">
+                <h2>Variety</h2>
+                <p>From wide room views to intimate moments, we capture the details that matter.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="selected-work">
+        <h2>Selected Work</h2>
+        <div class="portfolio-items">
+            @foreach (var item in Model)
+            {
+                <article class="portfolio-card">
+                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                    {
+                        <img src="@item.ImageUrl" alt="@item.Title" />
+                    }
+                    else
+                    {
+                        <div class="portfolio-placeholder" aria-hidden="true">
+                            @item.Category
+                        </div>
+                    }
+                    <div class="portfolio-card-copy">
+                        <span class="portfolio-category">@item.Category</span>
+                        <h3>@item.Title</h3>
+                        <p>@item.Description</p>
+                    </div>
+                </article>
+            }
+        </div>
+        <p class="delivery-note">
+            Private client delivery. Completed client content is delivered through private links and is never shown here.
+        </p>
+    </section>
+</div>

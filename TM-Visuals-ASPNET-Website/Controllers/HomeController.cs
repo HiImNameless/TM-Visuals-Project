@@ -73,7 +73,29 @@ namespace TMVisualsWebApp.Controllers
 
         public IActionResult MyWork()
         {
-            return View();
+            var myWork = new List<PortfolioItem>
+            {
+                new()
+                {
+                    Title = "Weddings",
+                    Description = "Celebrate your wedding with us.",
+                    Category = "Weddings"
+                },
+                new()
+                {
+                    Title = "Graduations",
+                    Description = "Celebrate your graduation with us.",
+                    Category = "Graduations"
+                },
+                new()
+                {
+                    Title = "Branding",
+                    Description = "Collaborate with us for stunning photos.",
+                    Category = "Branding"
+                }
+            };
+
+            return View(myWork);
         }
 
         public IActionResult Booking()
