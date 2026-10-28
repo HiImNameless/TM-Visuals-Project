@@ -39,32 +39,7 @@ body {
     font-family: Arial, sans-serif;
 }
 
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-}
 
-.logo {
-    color: #E0C61F;
-    font-size: 20px;
-    line-height: 1.1;
-}
-
-.nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 18px;
-    font-size: 14px;
-}
-
-.nav .active {
-    background-color: #E0C61F;
-    color: black;
-    border-radius: 12px;
-    padding: 3px 10px;
-}
 
 /* ---------- Profile page ---------- */
 .content {
@@ -103,20 +78,82 @@ body {
     border: 1px solid #E0C61F;
 }
 
-.booking-row {
+.bookings {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.booking-card {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #6b5f10;
+    background: linear-gradient(135deg, #1c1c1c, #2a2a2a);
+    border: 1px solid #3a3a3a;
+    border-left: 5px solid #E0C61F;
+    border-radius: 14px;
+    padding: 18px 22px;
+    color: white;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
-.status {
-    background-color: #E0C61F;
-    color: black;
+    .booking-card:hover {
+        transform: translateY(-3px);
+        border-color: #E0C61F;
+        box-shadow: 0 6px 18px rgba(224, 198, 31, 0.25);
+        color: white;
+    }
+
+.booking-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.booking-service {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.booking-date {
+    font-size: 13px;
+    color: #aaa;
+}
+
+.booking-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.booking-view {
     font-size: 12px;
-    border-radius: 12px;
-    padding: 3px 14px;
+    color: #E0C61F;
+}
+
+/* Status badges */
+.status {
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 20px;
+    padding: 4px 16px;
+    color: black;
+}
+
+.status-pending {
+    background-color: #E0C61F;
+}
+
+.status-confirmed {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.status-cancelled {
+    background-color: #d9534f;
+    color: white;
 }
 
 .buttons {
@@ -125,15 +162,16 @@ body {
     margin-top: 40px;
 }
 
-    .buttons a {
-        flex: 1;
-        text-align: center;
-        background-color: #E0C61F;
-        color: black;
-        text-decoration: none;
-        padding: 14px;
-        border-radius: 12px;
-    }
+.buttons a {
+    flex: 1;
+    text-align: center;
+    background-color: #E0C61F;
+    color: black;
+    text-decoration: none;
+    padding: 14px;
+    border-radius: 12px;
+
+}
 
 /* ---------- Booking status page ---------- */
 .booking-page {
@@ -341,4 +379,56 @@ body {
 
 .breadcrumb-item.active {
     color: white;
+}
+/* ---------- Navbar ---------- */
+.tm-navbar {
+    background-color: black;
+    padding: 14px 40px;
+    border-bottom: 1px solid #E0C61F;
+}
+
+/* Brand name */
+.tm-logo {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    margin-right: 40px;
+    color: #E0C61F !important;
+}
+
+.tm-logo-top {
+    font-size: 34px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.tm-logo-bottom {
+    font-size: 26px;
+    letter-spacing: 3px;
+}
+
+/* Links */
+.tm-navbar .nav-link,
+.tm-navbar .text-dark {
+    color: white !important;
+    font-size: 15px;
+    margin: 0 6px;
+    padding: 6px 16px !important;
+    border-radius: 20px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+    .tm-navbar .nav-link:hover {
+        color: #E0C61F !important;
+    }
+
+    .tm-navbar .nav-link.active {
+        background-color: #E0C61F;
+        color: black !important;
+        font-weight: bold;
+    }
+
+/* Keep the links vertically centered next to the bigger logo */
+.tm-navbar .navbar-nav {
+    align-items: center;
 }

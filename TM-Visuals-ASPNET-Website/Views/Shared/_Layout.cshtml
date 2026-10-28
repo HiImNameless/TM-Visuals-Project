@@ -8,56 +8,44 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        var page = ViewContext.RouteData.Values["action"]?.ToString();
+    }
+
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm tm-navbar">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TMVisualsWebApp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand tm-logo" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="tm-logo-top">TM</span>
+                    <span class="tm-logo-bottom">Visuals</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link @(page == "Index" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link @(page == "Privacy" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Register">Register</a>
+                            <a class="nav-link @(page == "Services" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Services">Services</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Login">Login</a>
+                            <a class="nav-link @(page == "MyWork" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="MyWork">My Work</a>
                         </li>
-
+                        <li class="nav-item">
+                            <a class="nav-link @(page == "Profile" ? "active" : "")" asp-area="" asp-controller="Home" asp-action="Profile">Profile</a>
+                        </li>
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <!--Added to resolve nav errors-->
-    @{
-        var page = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
-    }
-    <!-- The one header for every page -->
-    <div class="header">
-        <div class="logo">TM<br />Visuals</div>
-        <div class="nav">
-            <a class="@(page == "Index" ? "active" : "")" asp-controller="Home" asp-action="Index">Home</a>
-            <a class="@(page == "Services" ? "active" : "")" asp-controller="Home" asp-action="Services">Services</a>
-            <a class="@(page == "MyWork" ? "active" : "")" asp-controller="Home" asp-action="MyWork">My Work</a>
-            <a class="@(page == "Profile" ? "active" : "")" asp-controller="Home" asp-action="Profile">Profile</a>
-            <a href="#">Logout</a>
-        </div>
-    </div>
 
     <main role="main">
         @RenderBody()
