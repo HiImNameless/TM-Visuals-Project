@@ -60,7 +60,7 @@ class CalendarService implements CalendarDataSource {
     final user = client.auth.currentUser;
     if (user == null) throw const AuthException('Please sign in.');
     final admin = await client
-        .from('admin')
+        .from('admins')
         .select('admin_id')
         .eq('user_id', user.id)
         .maybeSingle();

@@ -11,15 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-
-//builder.Services.AddDbContext<ApplicationDbContext>(options =>
-   // options.UseNpgsql(builder.Configuration.GetConnectionString("SupabaseConnection")))
-builder.Services.AddDbContext<TMVisualsDBContext>(options =>         // replaced ApplicationDbContext with TMVisualsDBContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("SupabaseConnection")));
 
-
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<TMVisualsDBContext>();
+//builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    //.AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
 
 

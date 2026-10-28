@@ -1,83 +1,75 @@
 ﻿@model List<TMVisualsWebApp.Models.PortfolioItem>
 @{
-    ViewData["Title"] = "Porfolio";
+    ViewData["Title"] = "My Work";
 }
 
-
-<section>
-    <div>
-        <h1 class="main-title">
-            Our Work in Three Words
-        </h1>
-
-        
-        <hr class="divider">
-
+<div class="work-page">
+    <section>
+        <h1 class="main-title">Our Work in Three Words</h1>
+        <hr class="work-divider" />
 
         <div class="three-cards">
-            <div class="card-one">
-                <h3>Storytelling</h3>
-                <p>
-                    Every frame is intentionally composed to capture the genuine atmosphere and underlying story of your day.
-                </p>
-            </div>
-
-            <div class="highlited">
-                <h3>
-                    High-Quality
-                </h3>
-                <p>
-                    Proper, clear and beautiful edited photos and videos. Everything looks polished and cinematic, ready to share with the world.
-                </p>
-            </div>
-               
-            <div class="card-one">
-                <h3>Variety</h3>
-                <p>Stunning photos and cinematic video clips, capturing everything from wide room views to intimate moments.</p>
-            </div>
-
+            <article class="work-card">
+                <h2>Storytelling</h2>
+                <p>Every frame is composed to capture the genuine atmosphere and story of your day.</p>
+            </article>
+            <article class="work-card work-card-highlight">
+                <h2>High quality</h2>
+                <p>Beautifully edited photos and videos, polished and ready to share.</p>
+            </article>
+            <article class="work-card">
+                <h2>Variety</h2>
+                <p>From wide room views to intimate moments, we capture the details that matter.</p>
+            </article>
         </div>
+    </section>
 
-    </div>
-</section>
-
-
-<hr class="divider">
-
-
-<section>
-     <div>
-
-         <div class="selected-work-title">
-             <h1>Selected Work</h1>
-         </div>
-       
-        <div class="categories-all">
-            <button class="filter-btn active">All work</button>
-            <button class="filter-btn">Graduations</button>
-            <button class="filter-btn">Food</button>
-            <button class="filter-btn">Branding</button>
-            <button class="filter-btn">Weddings</button>
-        </div>
-
-       <div class="portfolio-items">
+    <section class="selected-work">
+        <h2>Selected Work</h2>
+        @if (ViewData["PortfolioError"] is string portfolioError)
+        {
+            <p class="delivery-note" role="status">@portfolioError</p>
+        }
+        else if (Model.Count == 0)
+        {
+            <p class="delivery-note">New work will appear here when it is added to the portfolio.</p>
+        }
+        <div class="portfolio-items">
             @foreach (var item in Model)
             {
-                <div class="portfolio-card">
-                    <img src="@item.ImageUrl" alt="@item.Title" />
-                    <h4>@item.Title</h4>
-                    <p>@item.Description</p>
-                </div>
+                <article class="portfolio-card">
+                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                    {
+                        @if (string.Equals(item.MediaType, "video", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <video controls preload="metadata" aria-label="@item.Title">
+                                <source src="@item.ImageUrl" />
+                            </video>
+                        }
+                        else
+                        {
+                            <img src="@item.ImageUrl" alt="@item.Title" />
+                        }
+                    }
+                    else
+                    {
+                        <div class="portfolio-placeholder" aria-hidden="true">
+                            @item.Category
+                        </div>
+                    }
+                    <div class="portfolio-card-copy">
+                        <span class="portfolio-category">@item.Category</span>
+                        <h3>@item.Title</h3>
+                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                        {
+                            <p>@item.Description</p>
+                        }
+                    </div>
+                </article>
             }
-       </div>
-
-        <div class="delivery-note">
-            Private client delivery. Completed client content is delivered through
-            private Google Drive links and is never shown here.
         </div>
-
-    </div>
-</section>
-         
-    
-
+        <p class="delivery-note">
+            Private client delivery. Completed client content is delivered through private links and is never shown here.
+        </p>
+    </section>
+</div>

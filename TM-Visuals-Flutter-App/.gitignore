@@ -46,6 +46,8 @@ app.*.map.json
 # Widget Preview related
 .widget_preview/
 
+# Local Supabase settings; never commit project credentials.
+/config/supabase.local.json
 
 # Generated Flutter platform plugin files
 /linux/flutter/ephemeral/
@@ -59,4 +61,3 @@ app.*.map.json
 /windows/flutter/generated_plugin_registrant.cc
 /windows/flutter/generated_plugin_registrant.h
 /windows/flutter/generated_plugins.cmake
-

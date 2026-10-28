@@ -1,4 +1,4 @@
 {
-  "SUPABASE_URL": "https://fswyeuiajsbdlkhhydnx.supabase.co",
-  "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_yZ2nsVQJrLqU0Ci3spKWhw_9EdN88_v"
+  "SUPABASE_URL": "https://YOUR_PROJECT_REF.supabase.co",
+  "SUPABASE_PUBLISHABLE_KEY": "YOUR_PUBLISHABLE_KEY"
 }

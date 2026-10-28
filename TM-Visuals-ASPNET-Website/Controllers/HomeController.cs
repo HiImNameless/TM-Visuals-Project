@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using TMVisualsWebApp.Models;
+using TMVisualsWebApp.Services;
+using System.Text.Json;
 
 namespace TMVisualsWebApp.Controllers
 {
@@ -31,7 +33,7 @@ namespace TMVisualsWebApp.Controllers
                  Name = "Musa Bonga",
                  Phone = "07123456789",
                  Email = "user@email.com",
-                 Service = "Videography",
+                 Service = "Video",
                  EventType = "Birthday Party",
                  NumberOfPeople = 40,
                  Location = "Cape Town",
@@ -44,10 +46,14 @@ namespace TMVisualsWebApp.Controllers
 
 
         private readonly ILogger<HomeController> _logger;
+        private readonly PortfolioCatalogService _portfolioCatalog;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(
+            ILogger<HomeController> logger,
+            PortfolioCatalogService portfolioCatalog)
         {
             _logger = logger;
+            _portfolioCatalog = portfolioCatalog;
         }
 
         public IActionResult Index()
@@ -71,34 +77,24 @@ namespace TMVisualsWebApp.Controllers
             return View();
         }
 
-        public IActionResult MyWork()
+        public async Task<IActionResult> MyWork(CancellationToken cancellationToken)
         {
-            var myWork = new List<PortfolioItem>
-          {
-              new PortfolioItem
-              {
-
-                  Title ="Weddings",
-                  Description="Celebrate your wedding with us",
-                  ImageUrl=""
-
-              },
-
-              new PortfolioItem {
-                   Title ="Graduations",
-                  Description="Celebrate your graduation with us",
-                  ImageUrl=""
-              },
-              new PortfolioItem
-              {
-                  Title = "Branding",
-                  Description = "Collaborate with us for stunning photos",
-                  ImageUrl="",
-
-              }
-          };
-
-            return View(myWork);
+            try
+            {
+                var myWork = await _portfolioCatalog.FetchPublicItemsAsync(
+                    cancellationToken);
+                return View(myWork);
+            }
+            catch (Exception error) when (
+                error is HttpRequestException ||
+                error is InvalidOperationException ||
+                error is JsonException)
+            {
+                _logger.LogError(error, "Could not load the public portfolio.");
+                ViewData["PortfolioError"] =
+                    "Portfolio items are temporarily unavailable. Please try again later.";
+                return View(new List<PortfolioItem>());
+            }
         }
 
         public IActionResult Booking()
@@ -130,43 +126,41 @@ namespace TMVisualsWebApp.Controllers
             return View(booking);
         }
 
-        //Client Content Section
+
         private static readonly List<ClientContent> contentItems = new()
-{
-        new ClientContent 
-                {
-                    ContentId = Guid.NewGuid(),
-                    EventType = "Graduation Shoot",
-                    Service = new List<string> { "Photography", "Videography" },
-                    BookingDate = new DateTime(2026,12,25),
-                    StartTime = "13:00",
-                    EndTime = "17:00",
-                    Location = "CUT",
-                    DeliveryLink = "https://example.com/download1",
-                    AccessStatus = "Available"
-                   },
-        new ClientContent
-                {
-                    ContentId = Guid.NewGuid(),
-                    EventType = "Wedding Shoot",
-                    Service = new List<string> { "Photography", "Videography" },
-                    BookingDate = new DateTime(2026,12,31),
-                    StartTime = "10:00",
-                    EndTime = "18:00",
-                    Location = "Bloem Hall",
-                    DeliveryLink = "https://example.com/download2",
-                    AccessStatus = "Available"
-                }
+        {
+            new ClientContent
+            {
+                ContentId = Guid.NewGuid(),
+                BookingId = Guid.NewGuid(),
+                EventType = "Graduation Shoot",
+                Service = new List<string> { "Photography", "Videography" },
+                BookingDate = new DateTime(2026, 12, 25),
+                StartTime = "13:00",
+                EndTime = "17:00",
+                Location = "CUT",
+                DeliveryLink = "https://example.com/download1",
+                AccessStatus = "Available"
+            },
+            new ClientContent
+            {
+                ContentId = Guid.NewGuid(),
+                BookingId = Guid.NewGuid(),
+                EventType = "Wedding Shoot",
+                Service = new List<string> { "Photography", "Videography" },
+                BookingDate = new DateTime(2026, 12, 31),
+                StartTime = "10:00",
+                EndTime = "18:00",
+                Location = "Bloem Hall",
+                DeliveryLink = "https://example.com/download2",
+                AccessStatus = "Available"
+            }
         };
+
         public IActionResult MyContent()
         {
             return View(contentItems);
         }
-        public IActionResult Download(string url)
-        {
-            return Redirect(url);
-        }
-        //End Client Content Section
 
         [HttpGet]
         public IActionResult EditDetails()

@@ -1,50 +1,94 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:photography_flutter_application/models/service_list_model.dart';
+import '../models/service_list_model.dart';
+import '../services/service_service.dart';
 
 class ServiceViewModel extends ChangeNotifier {
-  final _client = Supabase.instance.client;
+  ServiceViewModel({ServiceService? service})
+    : _service = service ?? ServiceService();
 
+  final ServiceService _service;
   List<ServicesListModel> _services = [];
-  List<ServicesListModel> get services => _services;
+  bool _isLoading = false;
+  bool _isSaving = false;
+  String? _errorMessage;
 
-  // Loads all services from Supabase (call when the list screen opens)
-  Future<void> fetchServices() async {
-    final data = await _client.from('services').select().order('created_at');
-    _services = data
-        .map<ServicesListModel>((e) => ServicesListModel.fromMap(e))
-        .toList();
+  List<ServicesListModel> get services => List.unmodifiable(_services);
+  bool get isLoading => _isLoading;
+  bool get isSaving => _isSaving;
+  String? get errorMessage => _errorMessage;
+
+  Future<void> loadServices() async {
+    _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
+    try {
+      _services = await _service.fetchServices();
+    } catch (error) {
+      debugPrint('Service list error: $error');
+      _errorMessage = error is PostgrestException && error.code == '42501'
+          ? 'You do not have permission to view services.'
+          : 'Could not load services. Check your connection and try again.';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  // Saves a new service to Supabase, then adds it to the local list
-  Future<void> addNewService(ServicesListModel newService) async {
-    final inserted = await _client
-        .from('services')
-        .insert(newService.toMap())
-        .select()
-        .single();
-    _services.add(ServicesListModel.fromMap(inserted));
+  Future<ServicesListModel> addService({
+    required String serviceName,
+    required String description,
+  }) async {
+    _isSaving = true;
+    _errorMessage = null;
     notifyListeners();
+    try {
+      final service = await _service.addService(
+        serviceName: serviceName,
+        description: description,
+      );
+      _services = [service, ..._services];
+      return service;
+    } catch (error) {
+      debugPrint('Add service error: $error');
+      rethrow;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
   }
 
-  // Updates a service in Supabase, then updates it in the local list
-  Future<void> editService(ServicesListModel updated) async {
-    final result = await _client
-        .from('services')
-        .update(updated.toMap())
-        .eq('service_id', updated.serviceId!)
-        .select()
-        .single();
-    final index = _services.indexWhere((s) => s.serviceId == updated.serviceId);
-    if (index != -1) _services[index] = ServicesListModel.fromMap(result);
+  Future<ServicesListModel> updateService(ServicesListModel service) async {
+    _isSaving = true;
+    _errorMessage = null;
     notifyListeners();
+    try {
+      final updated = await _service.updateService(service);
+      final index = _services.indexWhere((item) => item.id == updated.id);
+      if (index >= 0) _services[index] = updated;
+      return updated;
+    } catch (error) {
+      debugPrint('Update service error: $error');
+      rethrow;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
   }
 
-  // Deletes a service from Supabase, then removes it from the local list
-  Future<void> deleteService(ServicesListModel service) async {
-    await _client.from('services').delete().eq('service_id', service.serviceId!);
-    _services.removeWhere((s) => s.serviceId == service.serviceId);
+  Future<void> deleteService(String serviceId) async {
+    _isSaving = true;
+    _errorMessage = null;
     notifyListeners();
+    try {
+      await _service.deleteService(serviceId);
+      _services.removeWhere((service) => service.id == serviceId);
+    } catch (error) {
+      debugPrint('Delete service error: $error');
+      rethrow;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
   }
 }
