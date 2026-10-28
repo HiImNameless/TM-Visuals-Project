@@ -38,8 +38,9 @@ class ContentModel {
         ? Map<String, dynamic>.from(booking['client'])
         : <String, dynamic>{};
 
-    final profile = client['user_profile'] is Map
-        ? Map<String, dynamic>.from(client['user_profile'])
+    final profileValue = client['user'] ?? client['user_profile'];
+    final profile = profileValue is Map
+        ? Map<String, dynamic>.from(profileValue)
         : <String, dynamic>{};
 
     final uploaded = (map['uploaded_at'] ?? '').toString();
@@ -47,11 +48,11 @@ class ContentModel {
     return ContentModel(
       contentId: (map['content_id'] ?? '').toString(),
       bookingId: (map['booking_id'] ?? '').toString(),
-      title: map['title'] ?? 'Delivery',
-      deliveryLink: map['delivery_link'] ?? '',
+      title: (map['title'] ?? 'Delivery').toString(),
+      deliveryLink: (map['delivery_link'] ?? '').toString(),
       uploadedAt: uploaded.length >= 10 ? uploaded.substring(0, 10) : uploaded,
-      eventType: booking['event_type'] ?? '',
-      clientName: profile['full_name'] ?? '',
+      eventType: (map['event_type'] ?? booking['event_type'] ?? '').toString(),
+      clientName: (map['client_name'] ?? profile['full_name'] ?? '').toString(),
     );
   }
 
@@ -103,15 +104,16 @@ class ContentBookingOption {
         ? Map<String, dynamic>.from(map['client'])
         : <String, dynamic>{};
 
-    final profile = client['user_profile'] is Map
-        ? Map<String, dynamic>.from(client['user_profile'])
+    final profileValue = client['user'] ?? client['user_profile'];
+    final profile = profileValue is Map
+        ? Map<String, dynamic>.from(profileValue)
         : <String, dynamic>{};
 
     return ContentBookingOption(
       bookingId: (map['booking_id'] ?? '').toString(),
-      eventType: map['event_type'] ?? '',
-      status: map['booking_status'] ?? '',
-      clientName: profile['full_name'] ?? '',
+      eventType: (map['event_type'] ?? '').toString(),
+      status: (map['booking_status'] ?? '').toString(),
+      clientName: (map['client_name'] ?? profile['full_name'] ?? '').toString(),
     );
   }
 

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using TMVisualsWebApp.Models;
+using TMVisualsWebApp.Services;
+using System.Text.Json;
 
 namespace TMVisualsWebApp.Controllers
 {
@@ -44,10 +46,14 @@ namespace TMVisualsWebApp.Controllers
 
 
         private readonly ILogger<HomeController> _logger;
+        private readonly PortfolioCatalogService _portfolioCatalog;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(
+            ILogger<HomeController> logger,
+            PortfolioCatalogService portfolioCatalog)
         {
             _logger = logger;
+            _portfolioCatalog = portfolioCatalog;
         }
 
         public IActionResult Index()
@@ -71,31 +77,24 @@ namespace TMVisualsWebApp.Controllers
             return View();
         }
 
-        public IActionResult MyWork()
+        public async Task<IActionResult> MyWork(CancellationToken cancellationToken)
         {
-            var myWork = new List<PortfolioItem>
+            try
             {
-                new()
-                {
-                    Title = "Weddings",
-                    Description = "Celebrate your wedding with us.",
-                    Category = "Weddings"
-                },
-                new()
-                {
-                    Title = "Graduations",
-                    Description = "Celebrate your graduation with us.",
-                    Category = "Graduations"
-                },
-                new()
-                {
-                    Title = "Branding",
-                    Description = "Collaborate with us for stunning photos.",
-                    Category = "Branding"
-                }
-            };
-
-            return View(myWork);
+                var myWork = await _portfolioCatalog.FetchPublicItemsAsync(
+                    cancellationToken);
+                return View(myWork);
+            }
+            catch (Exception error) when (
+                error is HttpRequestException ||
+                error is InvalidOperationException ||
+                error is JsonException)
+            {
+                _logger.LogError(error, "Could not load the public portfolio.");
+                ViewData["PortfolioError"] =
+                    "Portfolio items are temporarily unavailable. Please try again later.";
+                return View(new List<PortfolioItem>());
+            }
         }
 
         public IActionResult Booking()

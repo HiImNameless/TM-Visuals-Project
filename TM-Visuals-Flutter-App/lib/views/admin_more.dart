@@ -24,11 +24,14 @@ class AdminMoreScreen extends StatelessWidget {
             ('/settings', 'Settings', Icons.settings_outlined),
           ])
             Card(
-              child: ListTile(
-                leading: Icon(item.$3, color: adminGold),
-                title: Text(item.$2),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).pushNamed(item.$1),
+              child: Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  leading: Icon(item.$3, color: adminGold),
+                  title: Text(item.$2),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).pushNamed(item.$1),
+                ),
               ),
             ),
           const SizedBox(height: 24),

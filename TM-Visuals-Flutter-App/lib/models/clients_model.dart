@@ -15,7 +15,8 @@ class ClientBooking {
     return ClientBooking(
       id: (map['booking_id'] ?? map['id'] ?? '').toString(),
       eventType: (map['event_type'] ?? '').toString(),
-      date: (map['event_date'] ?? map['date'] ?? '').toString(),
+      date: (map['event_date'] ?? map['date'] ?? map['created_at'] ?? '')
+          .toString(),
       status: (map['booking_status'] ?? map['status'] ?? '').toString(),
     );
   }
@@ -41,20 +42,31 @@ class Clients {
   });
 
   factory Clients.fromMap(Map<String, dynamic> map) {
+    final userValue = map['user'] ?? map['user_profile'];
+    final user = userValue is Map
+        ? Map<String, dynamic>.from(userValue)
+        : <String, dynamic>{};
     final bookings = map['bookings'] is List
         ? (map['bookings'] as List)
-            .whereType<Map<String, dynamic>>()
-            .map(ClientBooking.fromMap)
-            .toList()
+              .whereType<Map>()
+              .map(
+                (booking) =>
+                    ClientBooking.fromMap(Map<String, dynamic>.from(booking)),
+              )
+              .toList()
         : <ClientBooking>[];
 
     return Clients(
       id: (map['client_id'] ?? map['id'] ?? '').toString(),
-      name: (map['full_name'] ?? map['name'] ?? '').toString(),
-      email: (map['email'] ?? '').toString(),
-      phone: (map['phone'] ?? '').toString(),
-      previousBookings: (map['previous_bookings'] ?? '').toString(),
-      lastBooking: (map['last_booking'] ?? '').toString(),
+      name: (map['full_name'] ?? user['full_name'] ?? map['name'] ?? '')
+          .toString(),
+      email: (map['email'] ?? user['email'] ?? '').toString(),
+      phone: (map['phone'] ?? user['phone'] ?? '').toString(),
+      previousBookings: (map['previous_bookings'] ?? bookings.length)
+          .toString(),
+      lastBooking:
+          (map['last_booking'] ?? (bookings.isEmpty ? '' : bookings.first.date))
+              .toString(),
       bookings: bookings,
     );
   }
@@ -67,12 +79,16 @@ class Clients {
       'phone': phone,
       'previous_bookings': previousBookings,
       'last_booking': lastBooking,
-      'bookings': bookings.map((b) => {
-        'booking_id': b.id,
-        'event_type': b.eventType,
-        'event_date': b.date,
-        'booking_status': b.status,
-      }).toList(),
+      'bookings': bookings
+          .map(
+            (b) => {
+              'booking_id': b.id,
+              'event_type': b.eventType,
+              'event_date': b.date,
+              'booking_status': b.status,
+            },
+          )
+          .toList(),
     };
   }
 

@@ -190,6 +190,7 @@ body {
 }
 
 .portfolio-card img,
+.portfolio-card video,
 .portfolio-placeholder {
     display: flex;
     width: 100%;

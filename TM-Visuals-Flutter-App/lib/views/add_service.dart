@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:photography_flutter_application/viewmodels/service_list_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class AddServiceView extends StatefulWidget {
   const AddServiceView({super.key});
@@ -8,8 +10,9 @@ class AddServiceView extends StatefulWidget {
 }
 
 class _AddServiceViewState extends State<AddServiceView> {
-  final TextEditingController _serviceNameController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _serviceNameController = TextEditingController();
+  final _descriptionController = TextEditingController();
 
   @override
   void dispose() {
@@ -18,152 +21,69 @@ class _AddServiceViewState extends State<AddServiceView> {
     super.dispose();
   }
 
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    final vm = context.read<ServiceViewModel>();
+    try {
+      await vm.addService(
+        serviceName: _serviceNameController.text,
+        description: _descriptionController.text,
+      );
+      if (mounted) Navigator.pop(context, true);
+    } catch (error) {
+      if (mounted) _showError(error);
+    }
+  }
+
+  void _showError(Object error) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('Could not add service: $error')));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isSaving = context.watch<ServiceViewModel>().isSaving;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text(
-          "Service Details",
-          style: TextStyle(color: Colors.white),
-        ),
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
-        ),
+        title: const Text('Add Service', style: TextStyle(color: Colors.white)),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Color(0xFF1E1E1E),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.orange),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [const Divider(color: Colors.grey, height: 24)],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Service:',
-                          style: TextStyle(color: Colors.white, fontSize: 12),
-                        ),
-                        Expanded(
-                          child: TextField(
-                            controller: _serviceNameController,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                            decoration: const InputDecoration(
-                              hintText: "Text...",
-                              hintStyle: TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Description:",
-                          style: TextStyle(color: Colors.white, fontSize: 12),
-                        ),
-
-                        Expanded(
-                          child: TextField(
-                            controller: _descriptionController,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                            decoration: const InputDecoration(
-                              hintText: "Text...",
-                              hintStyle: TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    const Divider(color: Colors.grey),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text("CANCEL"),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.yellow,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text("ADD"),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // end container
-            ],
-          ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            TextFormField(
+              controller: _serviceNameController,
+              maxLength: 100,
+              decoration: const InputDecoration(labelText: 'Service name'),
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? 'Enter a service name.'
+                  : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _descriptionController,
+              maxLength: 1000,
+              minLines: 3,
+              maxLines: 6,
+              decoration: const InputDecoration(labelText: 'Description'),
+            ),
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: isSaving ? null : _save,
+              child: isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Add service'),
+            ),
+          ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.orange,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: Colors.black, size: 30),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book, color: Colors.black),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month, color: Colors.black),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person, color: Colors.black),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.navigation, color: Colors.black),
-            label: " ",
-          ),
-        ],
       ),
     );
   }

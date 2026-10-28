@@ -26,13 +26,30 @@
 
     <section class="selected-work">
         <h2>Selected Work</h2>
+        @if (ViewData["PortfolioError"] is string portfolioError)
+        {
+            <p class="delivery-note" role="status">@portfolioError</p>
+        }
+        else if (Model.Count == 0)
+        {
+            <p class="delivery-note">New work will appear here when it is added to the portfolio.</p>
+        }
         <div class="portfolio-items">
             @foreach (var item in Model)
             {
                 <article class="portfolio-card">
                     @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                     {
-                        <img src="@item.ImageUrl" alt="@item.Title" />
+                        @if (string.Equals(item.MediaType, "video", StringComparison.OrdinalIgnoreCase))
+                        {
+                            <video controls preload="metadata" aria-label="@item.Title">
+                                <source src="@item.ImageUrl" />
+                            </video>
+                        }
+                        else
+                        {
+                            <img src="@item.ImageUrl" alt="@item.Title" />
+                        }
                     }
                     else
                     {
@@ -43,7 +60,10 @@
                     <div class="portfolio-card-copy">
                         <span class="portfolio-category">@item.Category</span>
                         <h3>@item.Title</h3>
-                        <p>@item.Description</p>
+                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                        {
+                            <p>@item.Description</p>
+                        }
                     </div>
                 </article>
             }

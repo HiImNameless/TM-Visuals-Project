@@ -1,6 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/client_list_viewmodel.dart';
+import 'client_details.dart';
 
 class ClientsView extends StatelessWidget {
   const ClientsView({super.key});
@@ -56,40 +57,52 @@ class _ClientsContent extends StatelessWidget {
                       child: CircularProgressIndicator(color: Colors.orange),
                     )
                   : vm.errorMessage != null
-                      ? Center(
-                          child: Text(
-                            vm.errorMessage!,
-                            style: const TextStyle(color: Colors.redAccent),
-                          ),
-                        )
-                      : clients.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No clients found.',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            )
-                          : ListView.separated(
-                              itemCount: clients.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 8),
-                              itemBuilder: (context, index) {
-                                final client = clients[index];
-                                return Card(
-                                  color: const Color(0xFF1C1C1C),
-                                  child: ListTile(
-                                    title: Text(
-                                      client.name,
-                                      style: const TextStyle(color: Colors.white),
-                                    ),
-                                    subtitle: Text(
-                                      client.email.isEmpty ? 'No email provided' : client.email,
-                                      style: const TextStyle(color: Colors.grey),
-                                    ),
-                                    trailing: const Icon(Icons.chevron_right, color: Colors.orange),
-                                  ),
-                                );
-                              },
+                  ? Center(
+                      child: Text(
+                        vm.errorMessage!,
+                        style: const TextStyle(color: Colors.redAccent),
+                      ),
+                    )
+                  : clients.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No clients found.',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.separated(
+                      itemCount: clients.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final client = clients[index];
+                        return Card(
+                          color: const Color(0xFF1C1C1C),
+                          child: ListTile(
+                            title: Text(
+                              client.name,
+                              style: const TextStyle(color: Colors.white),
                             ),
+                            subtitle: Text(
+                              client.email.isEmpty
+                                  ? 'No email provided'
+                                  : client.email,
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                            trailing: const Icon(
+                              Icons.chevron_right,
+                              color: Colors.orange,
+                            ),
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ClientDetailsView(client: client),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
