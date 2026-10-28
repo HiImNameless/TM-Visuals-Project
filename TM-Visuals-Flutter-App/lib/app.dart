@@ -6,6 +6,7 @@ import 'viewmodels/admin_profile_viewmodel.dart';
 import 'viewmodels/invoice_list_viewmodel.dart';
 import 'viewmodels/admin_settings_viewmodel.dart';
 import 'viewmodels/booking_list_viewmodel.dart';
+import 'viewmodels/bookingList_viewmodel.dart' show BookingsViewModel;
 import 'viewmodels/service_list_viewmodel.dart';
 import 'views/admin_entry.dart';
 import 'views/supabase_setup.dart';
@@ -24,7 +25,9 @@ class MyApp extends StatelessWidget {
       ChangeNotifierProvider(create: (_) => AdminProfileViewModel()),
       ChangeNotifierProvider(create: (_) => InvoiceListViewModel()),
       ChangeNotifierProvider(create: (_) => AdminSettingsViewModel()),
-      ChangeNotifierProvider(create: (_) => BookingListViewModel()),
+      ChangeNotifierProvider<BookingsViewModel>(
+        create: (_) => BookingListViewModel(),
+      ),
       ChangeNotifierProvider(create: (_) => ServiceViewModel()),
     ],
     child: MaterialApp(
