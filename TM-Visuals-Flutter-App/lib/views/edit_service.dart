@@ -1,8 +1,7 @@
-
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:photography_flutter_application/models/service_list_model.dart';
 import 'package:photography_flutter_application/viewmodels/service_list_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class EditServiceView extends StatefulWidget {
   final ServicesListModel service;
@@ -13,239 +12,104 @@ class EditServiceView extends StatefulWidget {
 }
 
 class _EditServiceViewState extends State<EditServiceView> {
-  final TextEditingController _serviceNameController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
-  late String _selectedAvailability;
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _serviceNameController;
+  late final TextEditingController _descriptionController;
+  late bool _isActive;
 
   @override
   void initState() {
     super.initState();
-    _serviceNameController.text = widget.service.serviceName;
-    _descriptionController.text = widget.service.description;
-    _dateController.text = widget.service.dateTime;
-    _selectedAvailability = widget.service.availability;
+    _serviceNameController = TextEditingController(
+      text: widget.service.serviceName,
+    );
+    _descriptionController = TextEditingController(
+      text: widget.service.description,
+    );
+    _isActive = widget.service.availability == 'Available';
   }
 
-  
   @override
   void dispose() {
     _serviceNameController.dispose();
     _descriptionController.dispose();
-    _dateController.dispose();
     super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    final vm = context.read<ServiceViewModel>();
+    try {
+      await vm.updateService(
+        widget.service.copyWith(
+          serviceName: _serviceNameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          availability: _isActive ? 'Available' : 'Unavailable',
+        ),
+      );
+      if (mounted) Navigator.pop(context, true);
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not save service: $error')));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isSaving = context.watch<ServiceViewModel>().isSaving;
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
-          "Edit Details",
+          'Edit Service',
           style: TextStyle(color: Colors.white),
         ),
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            TextFormField(
+              controller: _serviceNameController,
+              maxLength: 100,
+              decoration: const InputDecoration(labelText: 'Service name'),
+              validator: (value) => value == null || value.trim().isEmpty
+                  ? 'Enter a service name.'
+                  : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _descriptionController,
+              maxLength: 1000,
+              minLines: 3,
+              maxLines: 6,
+              decoration: const InputDecoration(labelText: 'Description'),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Available for booking'),
+              value: _isActive,
+              activeTrackColor: Colors.orange,
+              onChanged: (value) => setState(() => _isActive = value),
+            ),
+            const SizedBox(height: 20),
+            FilledButton(
+              onPressed: isSaving ? null : _save,
+              child: isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Save changes'),
+            ),
+          ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Color(0xFF1E1E1E),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.orange),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [],
-                    ),
-                    const Divider(
-                      color: Color.fromARGB(31, 104, 103, 103),
-                      height: 24,
-                    ),
-
-                    const Text(
-                      'Service:',
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-
-                    TextField(
-                      controller: _serviceNameController,
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                      decoration: const InputDecoration(
-                        hintText: "Text... ",
-                        hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-                    Text(
-                      "Description: ",
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-
-                    TextField(
-                      controller: _descriptionController,
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                      decoration: const InputDecoration(
-                        hintText: "Text...",
-                        hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    const Text(
-                      "Created At: ",
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    const SizedBox(height: 4),
-                    TextField(
-                      controller: _dateController,
-                      readOnly: true,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                      decoration: const InputDecoration(
-                        hintText: "Text...",
-                        hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-
-                    EditServiceStatusDropdown(
-                      initialStatus: widget.service.availability,
-                      onChanged: (value) => _selectedAvailability = value,
-                    ),
-                    const SizedBox(height: 16),
-
-                    const Divider(color: Colors.grey),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text("BACK"),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                          ),
-                          //saves to Supabase, then closes
-                          onPressed: () async {
-                            final updated = widget.service.copyWith(
-                              serviceName: _serviceNameController.text.trim(),
-                              description: _descriptionController.text.trim(),
-                              availability: _selectedAvailability,
-                            );
-                            try {
-                              await context
-                                  .read<ServiceViewModel>()
-                                  .editService(updated);
-                              if (context.mounted) {
-                                // close edit AND details, back to the list
-                                Navigator.pop(context);
-                                Navigator.pop(context);
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Could not save: $e')),
-                                );
-                              }
-                            }
-                          },
-                          child: Text("SAVE"),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // end container
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-
-class EditServiceStatusDropdown extends StatefulWidget {
-  final String initialStatus;
-  final ValueChanged<String>? onChanged; // NEW
-
-  const EditServiceStatusDropdown({
-    super.key,
-    required this.initialStatus,
-    this.onChanged, 
-  });
-
-  @override
-  State<EditServiceStatusDropdown> createState() =>
-      _EditServiceStatusDropdownState();
-}
-
-class _EditServiceStatusDropdownState extends State<EditServiceStatusDropdown> {
-  late String selectedStatus;
-
-  final List<String> availabilities = ["Available", "Unavailable"];
-
-  @override
-  void initState() {
-    super.initState();
-    selectedStatus = availabilities.contains(widget.initialStatus)
-        ? widget.initialStatus
-        : availabilities.first;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      initialValue: selectedStatus, 
-      dropdownColor: const Color.fromARGB(255, 46, 46, 46),
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: "Booking Status",
-        labelStyle: const TextStyle(color: Colors.orange),
-        filled: true,
-        fillColor: Colors.black,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.orange),
-        ),
-      ),
-      items: availabilities.map((status) {
-        return DropdownMenuItem<String>(value: status, child: Text(status));
-      }).toList(),
-      onChanged: (newStatus) {
-        if (newStatus != null) {
-          setState(() {
-            selectedStatus = newStatus;
-          });
-          widget.onChanged?.call(newStatus);
-        }
-      },
     );
   }
 }

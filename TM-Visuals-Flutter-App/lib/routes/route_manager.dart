@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:photography_flutter_application/viewmodels/bookingList_viewmodel.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/add_invoice_view_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,6 +13,8 @@ import '../views/admin_settings_screen.dart';
 import '../views/invoice_list_screen.dart';
 import '../views/portfolio_content.dart';
 import '../views/service_list_view.dart';
+import '../views/clients.dart';
+import '../views/portfolio_gallery.dart';
 
 class RouteManager {
   static const calendar = '/calendar',
@@ -21,6 +22,8 @@ class RouteManager {
       profile = '/admin-profile',
       more = '/more',
       portfolioContent = '/portfolio-content',
+      clients = '/clients',
+      portfolioGallery = '/portfolio-gallery',
       invoices = '/invoices',
       addInvoice = '/add-invoice',
       dateManager = '/date-availability';
@@ -37,6 +40,8 @@ class RouteManager {
       profile => (_) => AdminProfileScreen(),
       more => (_) => const AdminMoreScreen(),
       portfolioContent => (_) => const PortfolioContentScreen(),
+      clients => (_) => const ClientsView(),
+      portfolioGallery => (_) => const PortfolioGalleryScreen(),
       invoices => (_) => InvoiceListScreen(),
       '/settings' => (_) => AdminSettingsScreen(),
       '/services' => (_) => const ServiceList(),

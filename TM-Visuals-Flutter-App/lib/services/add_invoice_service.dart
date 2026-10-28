@@ -35,7 +35,7 @@ class AddInvoiceService implements InvoiceDataSource {
     final user = client.auth.currentUser;
     if (user == null) throw const AuthException('Please sign in.');
     final row = await client
-        .from('admin')
+        .from('admins')
         .select('admin_id')
         .eq('user_id', user.id)
         .maybeSingle();

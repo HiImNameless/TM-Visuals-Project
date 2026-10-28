@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:photography_flutter_application/models/service_list_model.dart';
 import 'package:photography_flutter_application/viewmodels/service_list_viewmodel.dart';
 import 'package:photography_flutter_application/views/add_service.dart';
 import 'package:photography_flutter_application/views/service_details.dart';
@@ -13,146 +13,149 @@ class ServiceList extends StatefulWidget {
 }
 
 class _ServiceListState extends State<ServiceList> {
-  // load the services from Supabase when the screen opens
+  String _searchText = '';
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ServiceViewModel>().fetchServices();
+      context.read<ServiceViewModel>().loadServices();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<ServiceViewModel>(); // NEW
+    final vm = context.watch<ServiceViewModel>();
+    final services = vm.services.where((service) {
+      final query = _searchText.toLowerCase();
+      return service.serviceName.toLowerCase().contains(query) ||
+          service.description.toLowerCase().contains(query);
+    }).toList();
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text("TM Visuals", style: TextStyle(color: Colors.orange)),
+        title: const Text('Services', style: TextStyle(color: Colors.orange)),
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              onChanged: (value) => setState(() => _searchText = value.trim()),
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Search services...',
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.orange),
+                ),
+              ),
+            ),
+          ),
           Expanded(
-            child: SingleChildScrollView(
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 71, 69, 69),
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.orange),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(15),
-                      child: TextField(
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: "Search...",
-                          hintStyle: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: Colors.grey,
-                            size: 20,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: const BorderSide(color: Colors.orange),
-                          ),
-                        ),
-                      ),
+            child: vm.isLoading && vm.services.isEmpty
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.orange),
+                  )
+                : vm.errorMessage != null && vm.services.isEmpty
+                ? _MessageView(
+                    message: vm.errorMessage!,
+                    onRetry: vm.loadServices,
+                  )
+                : services.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No services found.',
+                      style: TextStyle(color: Colors.grey),
                     ),
-                    const SizedBox(height: 15),
-
-                    SizedBox(
-                      height: 500,
-
-                      child: ListView.builder(
-                        itemCount: vm.services.length,
-                        itemBuilder: (context, index) {
-                          final item = vm.services[index];
-                          return Card(
-                            color: const Color.fromARGB(255, 20, 20, 20),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: const BorderSide(color: Colors.orange),
-                            ),
-                            child: ListTile(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        ServiceDetailsView(service: item),
-                                  ),
-                                );
-                              },
-                              title: Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: Text(
-                                  item.serviceName,
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.description,
-                                    style: const TextStyle(color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                              trailing: Text(
-                                item.availability,
-                                style: TextStyle(
-                                  color: item.availability == "Available"
-                                      ? Colors.green
-                                      : Colors.orange,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 90),
+                    itemCount: services.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, index) {
+                      final service = services[index];
+                      return _ServiceCard(service: service);
+                    },
+                  ),
           ),
-          const SizedBox(height: 15),
-
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.yellow,
-              minimumSize: const Size(140, 45),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AddServiceView()),
-              );
-            },
-            child: const Text(
-              "ADD",
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 15),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: Colors.orange,
+        foregroundColor: Colors.black,
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddServiceView()),
+        ),
+        icon: const Icon(Icons.add),
+        label: const Text('Add service'),
       ),
     );
   }
+}
+
+class _ServiceCard extends StatelessWidget {
+  const _ServiceCard({required this.service});
+  final ServicesListModel service;
+
+  @override
+  Widget build(BuildContext context) {
+    final available = service.availability == 'Available';
+    return Card(
+      color: const Color(0xFF1C1C1C),
+      child: ListTile(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ServiceDetailsView(service: service),
+          ),
+        ),
+        title: Text(
+          service.serviceName,
+          style: const TextStyle(color: Colors.white),
+        ),
+        subtitle: Text(
+          service.description.isEmpty ? 'No description' : service.description,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(color: Colors.grey),
+        ),
+        trailing: Text(
+          service.availability,
+          style: TextStyle(
+            color: available ? Colors.green : Colors.orange,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MessageView extends StatelessWidget {
+  const _MessageView({required this.message, required this.onRetry});
+  final String message;
+  final Future<void> Function() onRetry;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Text(
+            message,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.redAccent),
+          ),
+        ),
+        TextButton(onPressed: onRetry, child: const Text('Retry')),
+      ],
+    ),
+  );
 }

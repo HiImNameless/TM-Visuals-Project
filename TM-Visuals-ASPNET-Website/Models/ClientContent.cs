@@ -1,11 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Identity.Client;
-
 namespace TMVisualsWebApp.Models
 {
     public class ClientContent
     {
-        
         public Guid ContentId { get; set; }
         public Guid BookingId { get; set; }
 
@@ -19,6 +15,5 @@ namespace TMVisualsWebApp.Models
         public DateTime BookingDate { get; set; }
         public string DeliveryLink { get; set; } = string.Empty;
         public string AccessStatus { get; set; } = string.Empty;
-        
     }
 }

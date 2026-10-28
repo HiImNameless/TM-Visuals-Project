@@ -18,15 +18,20 @@ class AdminMoreScreen extends StatelessWidget {
             ('/add-invoice', 'Upload invoice', Icons.upload_file),
             ('/invoices', 'Invoices', Icons.receipt_long),
             ('/portfolio-content', 'Portfolio', Icons.photo_library_outlined),
+            ('/portfolio-gallery', 'Portfolio gallery', Icons.collections_outlined),
+            ('/clients', 'Clients', Icons.people_outline),
             ('/services', 'Services', Icons.camera_alt_outlined),
             ('/settings', 'Settings', Icons.settings_outlined),
           ])
             Card(
-              child: ListTile(
-                leading: Icon(item.$3, color: adminGold),
-                title: Text(item.$2),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.of(context).pushNamed(item.$1),
+              child: Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  leading: Icon(item.$3, color: adminGold),
+                  title: Text(item.$2),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.of(context).pushNamed(item.$1),
+                ),
               ),
             ),
           const SizedBox(height: 24),
