@@ -21,11 +21,14 @@
     <div class="bookings">
         @foreach (var b in Model.Bookings)
         {
-            <a asp-controller="Home" asp-action="BookingStatus" asp-route-id="@b.Id"
-               style="color:white; text-decoration:none; display:block;">
-                <div class="booking-row">
-                    <span>[ @b.Service - @b.Date ]</span>
-                    <span class="status">@b.Status</span>
+            <a class="booking-card" asp-controller="Home" asp-action="BookingStatus" asp-route-id="@b.Id">
+                <div class="booking-info">
+                    <span class="booking-service">@b.Service</span>
+                    <span class="booking-date">@b.Date</span>
+                </div>
+                <div class="booking-right">
+                    <span class="status status-@b.Status.ToLower()">@b.Status</span>
+                    <span class="booking-view">View details &rarr;</span>
                 </div>
             </a>
         }
