@@ -38,9 +38,6 @@ body {
     color: white;
     font-family: Arial, sans-serif;
 }
-
-
-
 /* ---------- Profile page ---------- */
 .content {
     max-width: 900px;
@@ -73,6 +70,7 @@ body {
     margin: 20px 0;
     opacity: 1;
 }
+
 
 .bookings {
     border: 1px solid #E0C61F;
@@ -144,6 +142,7 @@ body {
 
 .status-pending {
     background-color: #E0C61F;
+    color: white;
 }
 
 .status-confirmed {
@@ -155,6 +154,7 @@ body {
     background-color: #d9534f;
     color: white;
 }
+
 
 .buttons {
     display: flex;
@@ -245,6 +245,7 @@ body {
     padding: 10px 16px;
     margin-top: 30px;
 }
+
 
 /*Portfolio or My work Page*/
 
@@ -380,6 +381,7 @@ body {
 .breadcrumb-item.active {
     color: white;
 }
+
 /* ---------- Navbar ---------- */
 .tm-navbar {
     background-color: black;
