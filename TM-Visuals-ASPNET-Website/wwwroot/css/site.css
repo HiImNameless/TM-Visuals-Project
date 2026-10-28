@@ -380,7 +380,7 @@ body {
 .auth-button:hover {
   background: #ffc933;
 }
-
+ 
 .auth-button:active {
   transform: translateY(1px);
 }
