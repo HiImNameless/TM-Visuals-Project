@@ -112,6 +112,7 @@ namespace TMVisualsWebApp.Controllers
             {
                 FullName = "Musa Bonga",
                 Email = "musabonga@gmail.com",
+                PhoneNumber = null,
                 Bookings = bookings
             };
 
@@ -172,13 +173,15 @@ namespace TMVisualsWebApp.Controllers
         public IActionResult EditDetails()
         {
             // Use the same UserProfile object your Profile() action uses
-            var profile = new UserProfile { FullName = "Musa Bonga", Email = "musa@example.com"};
+            var profile = new UserProfile { FullName = "Musa Bonga", Email = "musa@example.com", PhoneNumber = null};
             return View(profile);
         }
 
         [HttpPost]
         public IActionResult EditDetails(UserProfile model)
         {
+            ModelState.Remove("Bookings");
+
             if (!ModelState.IsValid)
             {
                 return View(model);
