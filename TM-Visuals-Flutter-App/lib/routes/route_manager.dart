@@ -25,6 +25,7 @@ class RouteManager {
       clients = '/clients',
       portfolioGallery = '/portfolio-gallery',
       invoices = '/invoices',
+      services ='/services',
       addInvoice = '/add-invoice',
       dateManager = '/date-availability';
   // Register only on the authenticated nested Navigator, never publicly.
@@ -44,7 +45,7 @@ class RouteManager {
       portfolioGallery => (_) => const PortfolioGalleryScreen(),
       invoices => (_) => InvoiceListScreen(),
       '/settings' => (_) => AdminSettingsScreen(),
-      '/services' => (_) => const ServiceList(),
+      services => (_) => const ServiceList(),
       addInvoice => (context) => AddInvoiceScreen(
         viewModel: context.read<AddInvoiceViewModel>(),
         initialBookingId: settings.arguments is String
