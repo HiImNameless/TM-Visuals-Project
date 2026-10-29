@@ -22,9 +22,9 @@ namespace TMVisualsWebApp.Controllers
                  EventType = "Wedding",
                  NumberOfPeople = 25,
                  Location = "Johannesburg, Sandton",
-                 Date = "2026, December 14",
-                 StartTime = "11:00 AM",
-                 FinishTime = "16:00 PM",
+                 Date = new DateTime(2026, 12 ,14),
+                 StartTime = new TimeSpan(11,0,0),
+                 FinishTime = new TimeSpan(16,0,0),
                  Status = "Pending"
              },
              new Booking
@@ -37,9 +37,9 @@ namespace TMVisualsWebApp.Controllers
                  EventType = "Birthday Party",
                  NumberOfPeople = 40,
                  Location = "Cape Town",
-                 Date = "2026, October 10",
-                 StartTime = "13:00 PM",
-                 FinishTime = "17:00 PM",
+                 Date = new DateTime (2026, 10, 10),
+                 StartTime = new TimeSpan(13,0,0),
+                 FinishTime = new TimeSpan(17,0,0),
                  Status = "Confirmed"
               }
          };
@@ -132,29 +132,30 @@ namespace TMVisualsWebApp.Controllers
         {
             new ClientContent
             {
-                ContentId = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
+                ContentId = 1,
+                BookingId = 1,
                 EventType = "Graduation Shoot",
-                Service = new List<string> { "Photography", "Videography" },
+                Services = new List<string> { "Photography", "Videography" },
                 BookingDate = new DateTime(2026, 12, 25),
-                StartTime = "13:00",
-                EndTime = "17:00",
+                StartTime = new TimeSpan(13, 0, 0),
+                FinishTime = new TimeSpan(17, 0, 0),
                 Location = "CUT",
                 DeliveryLink = "https://example.com/download1",
-                AccessStatus = "Available"
+                AccessStatus = ContentAccessStatus.Available,
             },
+
             new ClientContent
             {
-                ContentId = Guid.NewGuid(),
-                BookingId = Guid.NewGuid(),
+                ContentId = 2,
+                BookingId = 2,
                 EventType = "Wedding Shoot",
-                Service = new List<string> { "Photography", "Videography" },
+                Services = new List<string> { "Photography", "Videography" },
                 BookingDate = new DateTime(2026, 12, 31),
-                StartTime = "10:00",
-                EndTime = "18:00",
+                StartTime = new TimeSpan(10,0,0),
+                FinishTime = new TimeSpan(18,0,0),
                 Location = "Bloem Hall",
                 DeliveryLink = "https://example.com/download2",
-                AccessStatus = "Available"
+                AccessStatus = ContentAccessStatus.Pending,
             }
         };
 

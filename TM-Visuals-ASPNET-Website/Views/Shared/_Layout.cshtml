@@ -18,6 +18,7 @@
             <a class="@(page == "Index" ? "active" : "")" asp-controller="Home" asp-action="Index">Home</a>
             <a class="@(page == "Services" ? "active" : "")" asp-controller="Home" asp-action="Services">Services</a>
             <a class="@(page == "MyWork" ? "active" : "")" asp-controller="Home" asp-action="MyWork">My Work</a>
+            <a class="@(page == "Booking" ? "active" : "")" asp-controller="Booking" asp-action="CreateBooking">Booking</a>
             <a class="@(page == "Profile" ? "active" : "")" asp-controller="Home" asp-action="Profile">Profile</a>
             @if (User.Identity?.IsAuthenticated == true)
             {
