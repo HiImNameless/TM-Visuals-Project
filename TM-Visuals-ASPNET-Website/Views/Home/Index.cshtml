@@ -1,14 +1,79 @@
 ﻿@{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Home Page";
 }
 
+<!-- Hero -->
 <section class="home-hero">
-    <p class="home-eyebrow">Photography and film for the moments that matter</p>
-    <h1>Tell your story.<br /><span>We’ll capture it.</span></h1>
-    <p class="home-intro">Explore our work or create an account to book your next shoot.</p>
-    <div class="home-actions">
-        <a class="home-button home-button-primary" asp-controller="Home" asp-action="MyWork">Explore our work</a>
-        <a class="home-button" asp-controller="Account" asp-action="Register">Create an account</a>
-        <a class="home-login-link" asp-controller="Account" asp-action="Login">Already registered? Log in</a>
+    <img class="home-hero-img" src="~/images/hero.png" alt="Camera" />
+    <div class="home-hero-text">
+        <h1 class="home-name"><span>TSHEDZA</span><br />MULAUDZI</h1>
+        <p class="home-role">PHOTOGRAPHER &amp; VIDEOGRAPHER</p>
+        <p class="home-bio">
+            Tshedza Mulaudzi is a photographer and videographer based in Johannesburg.
+            He started his photography journey in 2025. He started as a photographer
+            till he slowly ventured into being a videographer. He does a lot of shoots
+            such as these mentioned below. More words, words, words.
+        </p>
+        <a class="home-btn" asp-controller="Home" asp-action="Services">View Services</a>
+    </div>
+</section>
+
+<!-- Cards -->
+<section class="home-cards">
+    <div class="home-card">
+        <h3>Full Service</h3>
+        <p>We provide high-quality services to ensure that you can remember those experiences in the future</p>
+    </div>
+    <div class="home-card home-card-bright">
+        <h3>Affordable</h3>
+        <p>We provide financial freedom if you're on a tight budget</p>
+    </div>
+    <div class="home-card">
+        <h3>Secure Delivery</h3>
+        <p>We ensure that your content is delivered to you securely and in pristine quality</p>
+    </div>
+</section>
+
+<!-- Feature titles -->
+<section class="home-features">
+    <h2>Full<br />Service</h2>
+    <h2>High Quality<br />Content<br />Delivery</h2>
+    <h2>Booking<br />Made Easy</h2>
+</section>
+
+<!-- FAQ -->
+<section class="home-faq">
+    <h3>FAQ's</h3>
+
+    <div class="faq-item">
+        <span class="faq-num">One</span>
+        <div>
+            <strong>How do you handle payment for bookings?</strong>
+            <p>Payments are handled privately with the owner as well as confirmation.</p>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <span class="faq-num">Two</span>
+        <div>
+            <strong>How do I get what I ordered for?</strong>
+            <p>Once the content is ready you'll be notified via email where you'll then login to download what you requested.</p>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <span class="faq-num">Three</span>
+        <div>
+            <strong>Where do I book?</strong>
+            <p>In the services section there's a button that'll present you with a booking form that will request details of what you want to book.</p>
+        </div>
+    </div>
+
+    <div class="faq-item">
+        <span class="faq-num">Four</span>
+        <div>
+            <strong>Can I book again if I already have a booking?</strong>
+            <p>Yes, just expect the date to change according to availability, type of booking etc.</p>
+        </div>
     </div>
 </section>
