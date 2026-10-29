@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TMVisualsWebApp.Models;
 
 namespace TMVisualsWebApp.Data
 {
@@ -12,5 +13,6 @@ namespace TMVisualsWebApp.Data
         // Add DbSet properties for your entities here
         // Example:
         // public DbSet<YourEntity> YourEntities { get; set; }
+        public DbSet<ClientContent> ClientContents { get; set; }
     }
 }

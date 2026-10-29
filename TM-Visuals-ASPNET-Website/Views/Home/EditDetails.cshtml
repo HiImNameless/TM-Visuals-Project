@@ -1,0 +1,46 @@
+﻿@model TMVisualsWebApp.Models.UserProfile
+@{
+    ViewData["Title"] = "Edit Details";
+}
+
+
+<div class="edit-page-container">
+
+    
+
+    <form asp-action="EditDetails" method="post" class="edit-details-form">
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <h2 class="edit-main-heading">Edit Details</h2>
+        <p class="edit-breadcrumb-text">My Account &gt; Edit Details</p>
+
+        
+        <div class="edit-form-group">
+            <label asp-for="FullName" class="edit-form-label">Full Name</label>
+            <input asp-for="FullName" class="edit-form-input" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+
+        <div class="edit-form-group">
+            <label asp-for="Email" class="edit-form-label">Email Address</label>
+            <input asp-for="Email" class="edit-form-input" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="edit-form-group">
+            <label asp-for="PhoneNumber" class="edit-form-label">Phone Number</label>
+            <input asp-for="PhoneNumber" class="edit-form-input" placeholder="[optional]" />
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        </div>
+
+        <div class="edit-form-actions">
+            <button type="submit" class="edit-save-btn">Save changes</button>
+            <a asp-action="Profile" class="edit-cancel-btn">Cancel</a>
+        </div>
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

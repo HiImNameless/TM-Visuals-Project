@@ -34,13 +34,18 @@ class PortfolioService {
   }
 
   /// Fetches all categories ordered by category_name
-  Future<List<Map<String, dynamic>>> fetchCategories() async {
-    final response = await supabase
-        .from(categoryTable)
-        .select('category_id, category_name')
-        .order('category_name');
-    return List<Map<String, dynamic>>.from(response);
-  }
+  Future<List<PortfolioCategory>> fetchCategories() async {
+  final response = await supabase
+      .from(categoryTable)
+      .select('category_id, category_name')
+      .order('category_name');
+
+  return response
+      .map<PortfolioCategory>(
+        (item) => PortfolioCategory.fromMap(item),
+      )
+      .toList();
+}
 
   /// Inserts a new category
   Future<Map<String, dynamic>> insertCategory(String name) async {

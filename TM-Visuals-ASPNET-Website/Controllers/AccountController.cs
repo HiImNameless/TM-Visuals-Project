@@ -37,9 +37,10 @@ namespace TMVisualsWebApp.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            if (!TryGetSupabaseAuthSettings(out var url, out var key))
+                return View(model);
+
             var client = _httpClientFactory.CreateClient("SupabaseAuth");
-            var url = _configuration["Supabase:Url"]!.TrimEnd('/');
-            var key = _configuration["Supabase:Key"]!;
 
             using var request = new HttpRequestMessage(
                 HttpMethod.Post, $"{url}/auth/v1/signup");
@@ -82,9 +83,10 @@ namespace TMVisualsWebApp.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            if (!TryGetSupabaseAuthSettings(out var url, out var key))
+                return View(model);
+
             var client = _httpClientFactory.CreateClient("SupabaseAuth");
-            var url = _configuration["Supabase:Url"]!.TrimEnd('/');
-            var key = _configuration["Supabase:Key"]!;
 
             using var request = new HttpRequestMessage(
                 HttpMethod.Post,
@@ -149,6 +151,25 @@ namespace TMVisualsWebApp.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        private bool TryGetSupabaseAuthSettings(out string url, out string key)
+        {
+            url = _configuration["Supabase:Url"]?.TrimEnd('/') ?? string.Empty;
+            key = _configuration["Supabase:Key"] ?? string.Empty;
+
+            if (Uri.TryCreate(url, UriKind.Absolute, out var projectUri) &&
+                (projectUri.Scheme == Uri.UriSchemeHttps ||
+                 projectUri.Scheme == Uri.UriSchemeHttp) &&
+                !string.IsNullOrWhiteSpace(key))
+            {
+                return true;
+            }
+
+            ModelState.AddModelError(
+                string.Empty,
+                "Supabase Auth is not configured. Set Supabase:Url and Supabase:Key using .NET User Secrets.");
+            return false;
+        }
+
         private sealed class SupabaseLoginResponse
         {
             [JsonPropertyName("user")]
@@ -175,4 +196,3 @@ namespace TMVisualsWebApp.Controllers
         }
     }
 }
-

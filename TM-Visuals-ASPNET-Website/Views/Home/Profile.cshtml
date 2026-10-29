@@ -1,0 +1,44 @@
+﻿@model TMVisualsWebApp.Models.UserProfile
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="content">
+
+    <h2>My Account</h2>
+
+    <div class="user-row">
+        <div class="avatar">MB</div>
+        <div>
+            <strong>@Model.FullName</strong><br />
+            <small>@Model.Email</small>
+        </div>
+    </div>
+
+    <hr class="line" />
+
+    <h3>My Bookings</h3>
+    <div class="bookings">
+        @foreach (var b in Model.Bookings)
+        {
+            <a class="booking-card" asp-controller="Home" asp-action="BookingStatus" asp-route-id="@b.Id">
+                <div class="booking-info">
+                    <span class="booking-service">@b.Service</span>
+                    <span class="booking-date">@b.Date?.ToString("dd MMMM yyyy")</span>
+                </div>
+                <div class="booking-right">
+                    <span class="status status-@b.Status.ToLower()">@b.Status</span>
+                    <span class="booking-view">View details &rarr;</span>
+                </div>
+            </a>
+        }
+    </div>
+
+    <hr class="line" />
+
+    <div class="buttons">
+        <a asp-controller="Home" asp-action="MyContent">My Content</a>
+        <a asp-controller="Home" asp-action="EditDetails">Edit Details</a>
+    </div>
+
+</div>

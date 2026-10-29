@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../viewmodels/admin_settings_viewmodel.dart';
 
 class AdminSettingsScreen extends StatelessWidget {
+  const AdminSettingsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     var vm = context.watch<AdminSettingsViewModel>();

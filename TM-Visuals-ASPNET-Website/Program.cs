@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Supabase.Extensions.DependencyInjection;
 using TMVisualsWebApp.Data;
 using TMVisualsWebApp.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using TMVisualsWebApp.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<TMVisualsDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("SupabaseConnection")));
 
 //builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -42,7 +43,22 @@ builder.Services
         options.SlidingExpiration = true;
     });
 
+//added this cause i can't test the website 
+builder.Services.AddHttpClient<PortfolioCatalogService>(client =>
+{
+    client.BaseAddress = new Uri("https://YOUR-SUPABASE-URL/");   // adjust to your real endpoint
+});
+
 builder.Services.AddAuthorization();
+
+//Services for the location search
+builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient("photon", client =>
+{
+    client.BaseAddress = new Uri("https://photon.komoot.io/");
+    client.Timeout = TimeSpan.FromSeconds(8);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("TMVisualsWebApp/1.0");
+});
 
 var app = builder.Build();
 

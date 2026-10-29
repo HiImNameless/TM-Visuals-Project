@@ -1,55 +1,44 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var page = ViewContext.RouteData.Values["action"]?.ToString();
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - TMVisualsWebApp</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - TM Visuals</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/TMVisualsWebApp.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TMVisualsWebApp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Register">Register</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Login">Login</a>
-                        </li>
-
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+    <!-- The one header for every page -->
+    <div class="header">
+        <div class="logo">TM<br />Visuals</div>
+        <div class="nav">
+            <a class="@(page == "Index" ? "active" : "")" asp-controller="Home" asp-action="Index">Home</a>
+            <a class="@(page == "Services" ? "active" : "")" asp-controller="Home" asp-action="Services">Services</a>
+            <a class="@(page == "MyWork" ? "active" : "")" asp-controller="Home" asp-action="MyWork">My Work</a>
+            <a class="@(page == "Booking" ? "active" : "")" asp-controller="Booking" asp-action="CreateBooking">Booking</a>
+            <a class="@(page == "Profile" ? "active" : "")" asp-controller="Home" asp-action="Profile">Profile</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form asp-controller="Account" asp-action="Logout" method="post" class="nav-auth-form">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="nav-auth-button">Logout</button>
+                </form>
+            }
+            else
+            {
+                <a class="@(page == "Login" ? "active" : "")" asp-controller="Account" asp-action="Login">Login</a>
+                <a class="@(page == "Register" ? "active" : "")" asp-controller="Account" asp-action="Register">Register</a>
+            }
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - TMVisualsWebApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
