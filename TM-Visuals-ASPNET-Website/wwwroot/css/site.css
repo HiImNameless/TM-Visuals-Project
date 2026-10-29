@@ -540,6 +540,127 @@ body {
   margin-bottom: 20px;
 }
 
+/*Edit details*/
+
+.edit-page-container {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 40px 20px;
+    min-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.edit-main-heading {
+    font-size: 36px;
+    margin-bottom: 5px;
+    color: #ffffff;
+    text-align: left;
+}
+
+.edit-breadcrumb-text {
+    font-size: 16px;
+    color: #aaaaaa;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.edit-details-form {
+    width: 100%;
+    max-width: 850px;
+}
+
+.edit-form-group {
+    margin-bottom: 24px;
+}
+
+.edit-form-label {
+    display: block;
+    font-size: 16px;
+    color: #cccccc;
+    margin-bottom: 8px;
+}
+
+.edit-form-input {
+    width: 100%;
+    padding: 16px 20px;
+    background-color: #1a1a1a; 
+    border: 1px solid #333333; 
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 18px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+  
+    .edit-form-input:focus {
+        border-color: #ff9900; 
+    }
+
+    
+    .edit-form-input::placeholder {
+        color: #666666;
+        font-size: 14px;
+    }
+
+.edit-form-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 32px;
+    align-items: center;
+}
+
+.edit-save-btn {
+    flex: 1;
+    padding: 16px 28px;
+    background-color: #f5c518;
+    color: #000000;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s ease;
+}
+
+    .edit-save-btn:hover {
+        opacity: 0.9; 
+    }
+
+.edit-cancel-btn {
+    flex: 1;
+    padding: 16px 28px;
+    background-color: transparent;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: normal;
+    border: 1px solid #333333;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none; 
+    transition: background-color 0.2s ease;
+}
+
+    .edit-cancel-btn:hover {
+        background-color: #1a1a1a;
+        color: #ffffff;
+        text-decoration: none;
+    }
+.edit-details-form {
+    width: 65vw;
+    max-width: 1100px;
+}
+
+/* ---------- Navbar ---------- */
+.tm-navbar {
+    background-color: black;
+    padding: 14px 40px;
+    border-bottom: 1px solid #E0C61F;
 .auth-checkbox {
   width: 18px;
   height: 18px;
