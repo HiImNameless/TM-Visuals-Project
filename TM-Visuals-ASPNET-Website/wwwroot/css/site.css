@@ -918,6 +918,100 @@ body {
     font-size: 0.85rem;
 }
 
+.calendar-day {
+    position: relative;
+}
+
+    .calendar-day.unavailable-date,
+    .calendar-day.fully-booked {
+        cursor: not-allowed;
+        opacity: 0.5;
+        text-decoration: line-through; /* not colour-only, so it's readable for everyone */
+    }
+
+    .calendar-day.fully-booked {
+        color: #e06c6c;
+    }
+
+    .calendar-day.partly-booked::after {
+        content: "";
+        position: absolute;
+        bottom: 8px;
+        left: 50%;
+        width: 6px;
+        height: 6px;
+        margin-left: -3px;
+        border-radius: 50%;
+        background: #e0a100;
+    }
+
+.calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    font-size: 0.85rem;
+}
+
+.legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 0.35rem;
+}
+
+.legend-free {
+    background: #888;
+}
+
+.legend-partial {
+    background: #e0a100;
+}
+
+.legend-full {
+    background: #e06c6c;
+}
+
+.day-availability {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid #333;
+    border-radius: 12px;
+}
+
+.day-availability-label {
+    margin: 0.75rem 0 0.35rem;
+    font-size: 0.85rem;
+    opacity: 0.8;
+}
+
+.time-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .time-chips li {
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+        background: #2a2a2a;
+        border: 1px solid #e0a100;
+    }
+
+.busy-chips li {
+    border-color: #e06c6c;
+}
+
+[hidden] {
+    display: none !important;
+}
+
 /* Budget and terms */
 
 .budget-field {

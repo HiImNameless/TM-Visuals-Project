@@ -10,50 +10,18 @@ namespace TMVisualsWebApp.Controllers
 {
     public class HomeController : Controller
     {
-        private static List<Booking> bookings = new List<Booking>
-        {
-             new Booking
-             {
-                 Id = 1,
-                 Name = "Musa Bonga",
-                 Phone = "07123456789",
-                 Email = "user@email.com",
-                 Service = "Photography",
-                 EventType = "Wedding",
-                 NumberOfPeople = 25,
-                 Location = "Johannesburg, Sandton",
-                 Date = new DateTime(2026, 12 ,14),
-                 StartTime = new TimeSpan(11,0,0),
-                 FinishTime = new TimeSpan(16,0,0),
-                 Status = "Pending"
-             },
-             new Booking
-             {
-                 Id = 2,
-                 Name = "Musa Bonga",
-                 Phone = "07123456789",
-                 Email = "user@email.com",
-                 Service = "Video",
-                 EventType = "Birthday Party",
-                 NumberOfPeople = 40,
-                 Location = "Cape Town",
-                 Date = new DateTime (2026, 10, 10),
-                 StartTime = new TimeSpan(13,0,0),
-                 FinishTime = new TimeSpan(17,0,0),
-                 Status = "Confirmed"
-              }
-         };
-
-
         private readonly ILogger<HomeController> _logger;
         private readonly PortfolioCatalogService _portfolioCatalog;
+        private readonly BookingStore _store;
 
         public HomeController(
             ILogger<HomeController> logger,
-            PortfolioCatalogService portfolioCatalog)
+            PortfolioCatalogService portfolioCatalog,
+            BookingStore store)
         {
             _logger = logger;
             _portfolioCatalog = portfolioCatalog;
+            _store = store;
         }
 
         public IActionResult Index()
@@ -109,7 +77,7 @@ namespace TMVisualsWebApp.Controllers
                 FullName = "Musa Bonga",
                 Email = "musabonga@gmail.com",
                 PhoneNumber = null,
-                Bookings = bookings
+                Bookings = _store.All()
             };
 
             return View(user);
@@ -117,7 +85,7 @@ namespace TMVisualsWebApp.Controllers
 
         public IActionResult BookingStatus(int id)
         {
-            var booking = bookings.FirstOrDefault(b => b.Id == id);
+            var booking = _store.All().FirstOrDefault(b => b.Id == id);
 
             if (booking == null)
             {

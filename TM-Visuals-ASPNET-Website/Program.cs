@@ -60,6 +60,10 @@ builder.Services.AddHttpClient("photon", client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("TMVisualsWebApp/1.0");
 });
 
+//availability and booking store
+builder.Services.AddSingleton<BookingStore>();
+builder.Services.AddSingleton<BookingAvailabilityService>();
+
 var app = builder.Build();
 
 //Middleware Pipeline

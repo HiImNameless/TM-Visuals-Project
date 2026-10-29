@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Text.Json;
 using TMVisualsWebApp.Models;
+using TMVisualsWebApp.Services;
 
 namespace TMVisualsWebApp.Controllers
 {
@@ -14,15 +15,29 @@ namespace TMVisualsWebApp.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly ILogger<BookingController> _logger;
+        private readonly BookingAvailabilityService _availability;
 
         public BookingController(
             IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
-            ILogger<BookingController> logger)
+            ILogger<BookingController> logger,
+            BookingAvailabilityService availability)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _logger = logger;
+            _availability = availability;
+        }
+
+        [HttpGet]
+        public IActionResult Availability(int year, int month)
+        {
+            if (year < 2000 || year > 2100 || month < 1 || month > 12)
+            {
+                return BadRequest();
+            }
+
+            return Json(new { days = _availability.GetMonth(year, month) });
         }
 
         public IActionResult CreateBooking()
