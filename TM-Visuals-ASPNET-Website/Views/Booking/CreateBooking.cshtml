@@ -11,12 +11,12 @@
     </div>
 
     <form asp-controller="Booking"
-          asp-action="Create"
+          asp-action="CreateBooking"
           method="post"
           id="bookingForm"
           class="booking-form">
 
-        
+
 
         <div class="field full-field">
             <label asp-for="Name"></label>
@@ -87,20 +87,6 @@
 
                 <span asp-validation-for="EventType"
                       class="field-validation-error"></span>
-            </div>
-        </div>
-
-        <div class="form-grid">
-            <div class="field">
-                <label asp-for="StartTime"></label>
-                <input asp-for="StartTime" type="time" class="booking-input" />
-                <span asp-validation-for="StartTime" class="field-validation-error"></span>
-            </div>
-
-            <div class="field">
-                <label asp-for="FinishTime"></label>
-                <input asp-for="FinishTime" type="time" class="booking-input" />
-                <span asp-validation-for="FinishTime" class="field-validation-error"></span>
             </div>
         </div>
 
@@ -208,11 +194,45 @@
                    aria-live="polite">
                     No date selected
                 </p>
+
+                <ul class="calendar-legend">
+                    <li><span class="legend-dot legend-free"></span> Available</li>
+                    <li><span class="legend-dot legend-partial"></span> Some times booked</li>
+                    <li><span class="legend-dot legend-full"></span> Fully booked / unavailable</li>
+                </ul>
+
+                <p id="availabilityNotice" class="field-validation-error" hidden>
+                    Availability could not be loaded. You can still submit, and we will check the time for you.
+                </p>
+
+                <div id="dayAvailability" class="day-availability" hidden>
+                    <h3>Times for this day</h3>
+                    <p class="day-availability-label">Available windows</p>
+                    <ul id="freeList" class="time-chips"></ul>
+                    <p class="day-availability-label">Already booked (includes 1 hour travel buffer)</p>
+                    <ul id="busyList" class="time-chips busy-chips"></ul>
+                </div>
             </div>
 
             <span asp-validation-for="Date"
                   class="field-validation-error"></span>
         </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="StartTime"></label>
+                <input asp-for="StartTime" type="time" class="booking-input" />
+                <span asp-validation-for="StartTime" class="field-validation-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="FinishTime"></label>
+                <input asp-for="FinishTime" type="time" class="booking-input" />
+                <span asp-validation-for="FinishTime" class="field-validation-error"></span>
+            </div>
+        </div>
+
+        <span id="timeConflict" class="field-validation-error" aria-live="polite"></span>
 
         <div class="field full-field">
             <label asp-for="NumberOfPeople"></label>
@@ -249,11 +269,11 @@
 
             <p>
                 Please ensure that the information provided is correct.
-                Your booking will remain pending until availability has
-                been confirmed.
+                Your price is agreed with the photographer on WhatsApp after you submit.
+                A 50% deposit is required to confirm the booking and it is non-refundable.
             </p>
 
-            <div class="form-check">
+            <div class="terms-check">
                 <input asp-for="AcceptTerms" class="form-check-input" />
                 <label asp-for="AcceptTerms" class="form-check-label">
                     I accept the terms and conditions
@@ -309,6 +329,150 @@
             let displayedMonth = today.getMonth();
             let displayedYear = today.getFullYear();
             let selectedDate = parseModelDate(selectedDateInput.value);
+
+            // ---- Availability ----------------------------------------------
+            // "2026-9" -> { "2026-10-30": { status, busy, free } }
+            // undefined = still loading, null = failed to load
+            const availabilityCache = {};
+            const dayAvailabilityPanel = document.getElementById("dayAvailability");
+            const freeList = document.getElementById("freeList");
+            const busyList = document.getElementById("busyList");
+            const availabilityNotice = document.getElementById("availabilityNotice");
+            const startInput = document.getElementById("StartTime");
+            const finishInput = document.getElementById("FinishTime");
+            const timeConflict = document.getElementById("timeConflict");
+            const bookingForm = document.getElementById("bookingForm");
+
+            function monthKey(year, month) {
+                return `${year}-${month}`;
+            }
+
+            function infoFor(date) {
+                if (!date) {
+                    return null;
+                }
+
+                const data = availabilityCache[
+                    monthKey(date.getFullYear(), date.getMonth())];
+
+                return data ? (data[formatForModel(date)] ?? null) : null;
+            }
+
+            async function loadAvailability(year, month) {
+                const key = monthKey(year, month);
+
+                if (availabilityCache[key] !== undefined) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(
+                        `/Booking/Availability?year=${year}&month=${month + 1}`,
+                        { headers: { "Accept": "application/json" } });
+
+                    if (!response.ok) {
+                        throw new Error("Availability request failed.");
+                    }
+
+                    availabilityCache[key] = (await response.json()).days;
+                } catch {
+                    availabilityCache[key] = null;
+                    availabilityNotice.hidden = false;
+                }
+            }
+
+            async function showMonth() {
+                // Draw straight away; days stay disabled until availability arrives.
+                renderCalendar();
+
+                const year = displayedYear;
+                const month = displayedMonth;
+
+                await loadAvailability(year, month);
+
+                // The visitor may have changed month while this was loading.
+                if (year === displayedYear && month === displayedMonth) {
+                    renderCalendar();
+                    showDayAvailability();
+                }
+            }
+
+            function fillChips(list, windows, emptyText) {
+                list.innerHTML = "";
+
+                if (windows.length === 0) {
+                    const item = document.createElement("li");
+                    item.textContent = emptyText;
+                    list.appendChild(item);
+                    return;
+                }
+
+                windows.forEach(function (slot) {
+                    const item = document.createElement("li");
+                    item.textContent = `${slot.from} \u2013 ${slot.to}`;
+                    list.appendChild(item);
+                });
+            }
+
+            function showDayAvailability() {
+                const info = infoFor(selectedDate);
+
+                if (!info) {
+                    dayAvailabilityPanel.hidden = true;
+                    return;
+                }
+
+                dayAvailabilityPanel.hidden = false;
+                fillChips(freeList, info.free, "None");
+                fillChips(busyList, info.busy, "Nothing booked yet");
+            }
+
+            function checkTimes() {
+                timeConflict.textContent = "";
+
+                const start = startInput.value.slice(0, 5);
+                const finish = finishInput.value.slice(0, 5);
+
+                if (!selectedDate || !start || !finish) {
+                    return true;
+                }
+
+                if (finish <= start) {
+                    timeConflict.textContent =
+                        "The finish time must be later than the start time.";
+                    return false;
+                }
+
+                const info = infoFor(selectedDate);
+
+                if (!info) {
+                    return true; // availability did not load; the server still checks
+                }
+
+                const fits = info.free.some(function (slot) {
+                    return start >= slot.from && finish <= slot.to;
+                });
+
+                if (!fits) {
+                    timeConflict.textContent =
+                        "That time overlaps an existing booking or is outside working hours. " +
+                        "Please choose from the available windows shown above.";
+                    return false;
+                }
+
+                return true;
+            }
+
+            startInput.addEventListener("change", checkTimes);
+            finishInput.addEventListener("change", checkTimes);
+
+            bookingForm.addEventListener("submit", function (event) {
+                if (!checkTimes()) {
+                    event.preventDefault();
+                    startInput.focus();
+                }
+            });
+            // ----------------------------------------------------------------
 
             if (selectedDate) {
                 displayedMonth = selectedDate.getMonth();
@@ -402,6 +566,13 @@
                         day
                     );
 
+                    const monthData =
+                        availabilityCache[monthKey(displayedYear, displayedMonth)];
+
+                    const info = monthData
+                        ? monthData[formatForModel(currentDate)]
+                        : null;
+
                     const dayButton = document.createElement("button");
                     dayButton.type = "button";
                     dayButton.className = "calendar-day";
@@ -420,7 +591,22 @@
                     if (currentDate < today) {
                         dayButton.disabled = true;
                         dayButton.classList.add("past-date");
+                    } else if (monthData === undefined) {
+                        // Availability is still loading.
+                        dayButton.disabled = true;
+                    } else if (info &&
+                               (info.status === "blocked" || info.status === "full")) {
+                        dayButton.disabled = true;
+                        dayButton.classList.add(
+                            info.status === "full" ? "fully-booked" : "unavailable-date");
+                        dayButton.title =
+                            info.status === "full" ? "Fully booked" : "Unavailable";
                     } else {
+                        if (info && info.status === "partial") {
+                            dayButton.classList.add("partly-booked");
+                            dayButton.title = "Some times are already booked";
+                        }
+
                         dayButton.addEventListener("click", function () {
                             selectedDate = currentDate;
                             selectedDateInput.value =
@@ -430,11 +616,13 @@
                                 new Event("change", { bubbles: true })
                             );
 
-                            if (window.jQuery){
+                            if (window.jQuery) {
                                 window.jQuery(selectedDateInput).valid();
                             }
 
                             updateSelectedDateText();
+                            showDayAvailability();
+                            checkTimes();
                             renderCalendar();
                         });
                     }
@@ -473,7 +661,7 @@
                     displayedYear--;
                 }
 
-                renderCalendar();
+                showMonth();
             });
 
             nextButton.addEventListener("click", function () {
@@ -484,10 +672,10 @@
                     displayedYear++;
                 }
 
-                renderCalendar();
+                showMonth();
             });
 
-            renderCalendar();
+            showMonth();
         });
     </script>
     <script>
