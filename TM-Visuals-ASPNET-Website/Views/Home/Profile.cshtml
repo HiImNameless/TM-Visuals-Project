@@ -24,7 +24,7 @@
             <a class="booking-card" asp-controller="Home" asp-action="BookingStatus" asp-route-id="@b.Id">
                 <div class="booking-info">
                     <span class="booking-service">@b.Service</span>
-                    <span class="booking-date">@b.Date</span>
+                    <span class="booking-date">@b.Date?.ToString("dd MMMM yyyy")</span>
                 </div>
                 <div class="booking-right">
                     <span class="status status-@b.Status.ToLower()">@b.Status</span>

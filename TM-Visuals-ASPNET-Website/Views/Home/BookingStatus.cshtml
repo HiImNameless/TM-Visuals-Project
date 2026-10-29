@@ -13,9 +13,9 @@
         <div class="info-row"><span>Type of Event</span><span>@Model.EventType</span></div>
         <div class="info-row"><span>Number of people</span><span>@Model.NumberOfPeople</span></div>
         <div class="info-row"><span>Location</span><span>@Model.Location</span></div>
-        <div class="info-row"><span>Date</span><span>@Model.Date</span></div>
-        <div class="info-row"><span>Start Time</span><span>@Model.StartTime</span></div>
-        <div class="info-row"><span>Finish Time</span><span>@Model.FinishTime</span></div>
+        <div class="info-row"><span>Date</span><span>@Model.Date?.ToString("dd MMMM yyyy")</span></div>
+        <div class="info-row"><span>Start Time</span><span>@Model.StartTime?.ToString(@"hh\:mm")</span></div>
+        <div class="info-row"><span>Finish Time</span><span>@Model.FinishTime?.ToString(@"hh\:mm")</span></div>
     </div>
 
     <div class="status-row">

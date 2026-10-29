@@ -41,7 +41,7 @@
                         </h5>
 
                         <div class="mb-3">
-                            @foreach (var service in item.Service)
+                            @foreach (var service in item.Services)
                             {
                                 <span class="badge service-badge me-2">
                                     @service
@@ -55,8 +55,8 @@
                         </p>
                         <p>
                             <strong>Time:</strong>
-                            @item.StartTime -
-                            @item.EndTime
+                            @item.StartTime?.ToString(@"hh\:mm") -
+                            @item.FinishTime?.ToString(@"hh\:mm")
                         </p>
                         <p>
                             <strong>Location:</strong>

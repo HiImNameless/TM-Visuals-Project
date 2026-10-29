@@ -1,0 +1,981 @@
+﻿@model TMVisualsWebApp.Models.Booking
+
+@{
+    ViewData["Title"] = "Create Booking";
+}
+
+<div class="booking-page">
+    <div class="booking-heading">
+        <h1>Enter Full Details</h1>
+        <p>Complete the form and select an available date.</p>
+    </div>
+
+    <form asp-controller="Booking"
+          asp-action="Create"
+          method="post"
+          id="bookingForm"
+          class="booking-form">
+
+        
+
+        <div class="field full-field">
+            <label asp-for="Name"></label>
+
+            <input asp-for="Name"
+                   class="booking-input"
+                   placeholder="Enter your full name" />
+
+            <span asp-validation-for="Name"
+                  class="field-validation-error"></span>
+        </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Phone"></label>
+
+                <input asp-for="Phone"
+                       class="booking-input"
+                       type="tel"
+                       placeholder="e.g. 071 234 5678" />
+
+                <span asp-validation-for="Phone"
+                      class="field-validation-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Email"></label>
+
+                <input asp-for="Email"
+                       class="booking-input"
+                       type="email"
+                       placeholder="name@example.com" />
+
+                <span asp-validation-for="Email"
+                      class="field-validation-error"></span>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="Service"></label>
+
+                <select asp-for="Service" class="booking-input">
+                    <option value="">Select a service</option>
+                    <option value="Photography">Photography</option>
+                    <option value="Videography">Videography</option>
+                    <option value="Photography & Videography">
+                        Photography &amp; Videography
+                    </option>
+                </select>
+
+                <span asp-validation-for="Service"
+                      class="field-validation-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="EventType"></label>
+
+                <select asp-for="EventType" class="booking-input">
+                    <option value="">Select an event</option>
+                    <option value="Graduation">Graduation</option>
+                    <option value="Wedding">Wedding</option>
+                    <option value="Birthday">Birthday</option>
+                    <option value="Corporate Event">Corporate Event</option>
+                    <option value="Portrait Shoot">Portrait Shoot</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <span asp-validation-for="EventType"
+                      class="field-validation-error"></span>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="field">
+                <label asp-for="StartTime"></label>
+                <input asp-for="StartTime" type="time" class="booking-input" />
+                <span asp-validation-for="StartTime" class="field-validation-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="FinishTime"></label>
+                <input asp-for="FinishTime" type="time" class="booking-input" />
+                <span asp-validation-for="FinishTime" class="field-validation-error"></span>
+            </div>
+        </div>
+
+        <div class="field full-field location-field">
+            <label asp-for="Location"></label>
+
+            <div class="location-search-container">
+                <div class="location-input-row">
+                    <div class="location-input-container">
+                        <input asp-for="Location"
+                               id="locationInput"
+                               class="booking-input"
+                               placeholder="Start typing an address or venue"
+                               autocomplete="off"
+                               role="combobox"
+                               aria-autocomplete="list"
+                               aria-expanded="false"
+                               aria-controls="locationSuggestions"
+                               aria-describedby="locationHelp locationStatus" />
+
+                        <div id="locationSuggestions"
+                             class="location-suggestions"
+                             role="listbox"
+                             hidden>
+                        </div>
+                    </div>
+
+                    <button type="button"
+                            id="useLocationButton"
+                            class="use-location-button">
+                        <span class="location-button-icon"
+                              aria-hidden="true">
+                            &#9673;
+                        </span>
+
+                        <span id="locationButtonText">
+                            Use My Location
+                        </span>
+                    </button>
+                </div>
+
+                <input asp-for="Latitude"
+                       type="hidden"
+                       id="latitudeInput" />
+
+                <input asp-for="Longitude"
+                       type="hidden"
+                       id="longitudeInput" />
+
+                <p id="locationHelp" class="location-help">
+                    Search for a venue or use the device's current location.
+                </p>
+
+                <p id="locationStatus"
+                   class="location-status"
+                   aria-live="polite">
+                </p>
+            </div>
+
+            <span asp-validation-for="Location"
+                  class="field-validation-error"></span>
+        </div>
+
+        <div class="field full-field">
+            <label>Select a Date</label>
+
+            <input asp-for="Date" type="hidden" id="selectedDate" />
+
+            <div class="calendar" id="bookingCalendar">
+                <div class="calendar-header">
+                    <button type="button"
+                            id="previousMonth"
+                            class="calendar-arrow"
+                            aria-label="Previous month">
+                        &#10094;
+                    </button>
+
+                    <h2 id="calendarMonth" aria-live="polite"></h2>
+
+                    <button type="button"
+                            id="nextMonth"
+                            class="calendar-arrow"
+                            aria-label="Next month">
+                        &#10095;
+                    </button>
+                </div>
+
+                <div class="calendar-weekdays" aria-hidden="true">
+                    <span>Sun</span>
+                    <span>Mon</span>
+                    <span>Tue</span>
+                    <span>Wed</span>
+                    <span>Thu</span>
+                    <span>Fri</span>
+                    <span>Sat</span>
+                </div>
+
+                <div id="calendarDays"
+                     class="calendar-days"
+                     aria-label="Booking calendar">
+                </div>
+
+                <p id="selectedDateText"
+                   class="selected-date-text"
+                   aria-live="polite">
+                    No date selected
+                </p>
+            </div>
+
+            <span asp-validation-for="Date"
+                  class="field-validation-error"></span>
+        </div>
+
+        <div class="field full-field">
+            <label asp-for="NumberOfPeople"></label>
+
+            <input asp-for="NumberOfPeople"
+                   class="booking-input"
+                   type="number"
+                   min="1"
+                   placeholder="Enter the number of people" />
+
+            <span asp-validation-for="NumberOfPeople"
+                  class="field-validation-error"></span>
+        </div>
+
+        <div class="field budget-field">
+            <label asp-for="Budget">What is your budget for this service?</label>
+
+            <div class="currency-input">
+                <span>R</span>
+
+                <input asp-for="Budget"
+                       type="number"
+                       min="0.01"
+                       step="0.01"
+                       placeholder="0.00" />
+            </div>
+
+            <span asp-validation-for="Budget"
+                  class="field-validation-error"></span>
+        </div>
+
+        <div class="terms-card">
+            <h2>Before you submit</h2>
+
+            <p>
+                Please ensure that the information provided is correct.
+                Your booking will remain pending until availability has
+                been confirmed.
+            </p>
+
+            <div class="form-check">
+                <input asp-for="AcceptTerms" class="form-check-input" />
+                <label asp-for="AcceptTerms" class="form-check-label">
+                    I accept the terms and conditions
+                </label>
+                <span asp-validation-for="AcceptTerms"
+                      class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="booking-actions">
+            <button type="submit" class="submit-booking-button">
+                Submit Booking
+            </button>
+
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="cancel-booking-button">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Client-side rule for [MustBeTrue] (the terms checkbox).
+        jQuery.validator.addMethod("mustbetrue", function (value, element) {
+            return element.checked;
+        });
+        jQuery.validator.unobtrusive.adapters.addBool("mustbetrue");
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const monthHeading = document.getElementById("calendarMonth");
+            const calendarDays = document.getElementById("calendarDays");
+            const previousButton = document.getElementById("previousMonth");
+            const nextButton = document.getElementById("nextMonth");
+            const selectedDateInput = document.getElementById("selectedDate");
+            const selectedDateText = document.getElementById("selectedDateText");
+
+            const monthNames = [
+                "January", "February", "March", "April",
+                "May", "June", "July", "August",
+                "September", "October", "November", "December"
+            ];
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            let displayedMonth = today.getMonth();
+            let displayedYear = today.getFullYear();
+            let selectedDate = parseModelDate(selectedDateInput.value);
+
+            if (selectedDate) {
+                displayedMonth = selectedDate.getMonth();
+                displayedYear = selectedDate.getFullYear();
+                updateSelectedDateText();
+            }
+
+            function parseModelDate(value) {
+                if (!value) {
+                    return null;
+                }
+
+                const datePart = value.substring(0, 10);
+                const parts = datePart.split("-");
+
+                if (parts.length !== 3) {
+                    return null;
+                }
+
+                const parsedDate = new Date(
+                    Number(parts[0]),
+                    Number(parts[1]) - 1,
+                    Number(parts[2])
+                );
+
+                return Number.isNaN(parsedDate.getTime())
+                    ? null
+                    : parsedDate;
+            }
+
+            function formatForModel(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+
+                return `${year}-${month}-${day}`;
+            }
+
+            function sameDate(firstDate, secondDate) {
+                return firstDate &&
+                    secondDate &&
+                    firstDate.getFullYear() === secondDate.getFullYear() &&
+                    firstDate.getMonth() === secondDate.getMonth() &&
+                    firstDate.getDate() === secondDate.getDate();
+            }
+
+            function updateSelectedDateText() {
+                if (!selectedDate) {
+                    selectedDateText.textContent = "No date selected";
+                    return;
+                }
+
+                selectedDateText.textContent =
+                    "Selected date: " +
+                    selectedDate.toLocaleDateString("en-ZA", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric"
+                    });
+            }
+
+            function renderCalendar() {
+                calendarDays.innerHTML = "";
+
+                monthHeading.textContent =
+                    `${monthNames[displayedMonth]} ${displayedYear}`;
+
+                const firstDay = new Date(
+                    displayedYear,
+                    displayedMonth,
+                    1
+                ).getDay();
+
+                const daysInMonth = new Date(
+                    displayedYear,
+                    displayedMonth + 1,
+                    0
+                ).getDate();
+
+                for (let index = 0; index < firstDay; index++) {
+                    const emptyCell = document.createElement("span");
+                    emptyCell.className = "calendar-empty";
+                    calendarDays.appendChild(emptyCell);
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const currentDate = new Date(
+                        displayedYear,
+                        displayedMonth,
+                        day
+                    );
+
+                    const dayButton = document.createElement("button");
+                    dayButton.type = "button";
+                    dayButton.className = "calendar-day";
+                    dayButton.textContent = day.toString();
+
+                    dayButton.setAttribute(
+                        "aria-label",
+                        currentDate.toLocaleDateString("en-ZA", {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric"
+                        })
+                    );
+
+                    if (currentDate < today) {
+                        dayButton.disabled = true;
+                        dayButton.classList.add("past-date");
+                    } else {
+                        dayButton.addEventListener("click", function () {
+                            selectedDate = currentDate;
+                            selectedDateInput.value =
+                                formatForModel(currentDate);
+
+                            selectedDateInput.dispatchEvent(
+                                new Event("change", { bubbles: true })
+                            );
+
+                            if (window.jQuery){
+                                window.jQuery(selectedDateInput).valid();
+                            }
+
+                            updateSelectedDateText();
+                            renderCalendar();
+                        });
+                    }
+
+                    if (sameDate(currentDate, today)) {
+                        dayButton.classList.add("today");
+                    }
+
+                    if (sameDate(currentDate, selectedDate)) {
+                        dayButton.classList.add("selected-date");
+                        dayButton.setAttribute("aria-pressed", "true");
+                    }
+
+                    calendarDays.appendChild(dayButton);
+                }
+
+                const showingCurrentMonth =
+                    displayedMonth === today.getMonth() &&
+                    displayedYear === today.getFullYear();
+
+                previousButton.disabled = showingCurrentMonth;
+            }
+
+            previousButton.addEventListener("click", function () {
+                if (
+                    displayedYear === today.getFullYear() &&
+                    displayedMonth === today.getMonth()
+                ) {
+                    return;
+                }
+
+                displayedMonth--;
+
+                if (displayedMonth < 0) {
+                    displayedMonth = 11;
+                    displayedYear--;
+                }
+
+                renderCalendar();
+            });
+
+            nextButton.addEventListener("click", function () {
+                displayedMonth++;
+
+                if (displayedMonth > 11) {
+                    displayedMonth = 0;
+                    displayedYear++;
+                }
+
+                renderCalendar();
+            });
+
+            renderCalendar();
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const locationInput =
+                document.getElementById("locationInput");
+
+            const latitudeInput =
+                document.getElementById("latitudeInput");
+
+            const longitudeInput =
+                document.getElementById("longitudeInput");
+
+            const suggestionsContainer =
+                document.getElementById("locationSuggestions");
+
+            const useLocationButton =
+                document.getElementById("useLocationButton");
+
+            const locationButtonText =
+                document.getElementById("locationButtonText");
+
+            const locationStatus =
+                document.getElementById("locationStatus");
+
+            let debounceTimer = null;
+            let currentRequestController = null;
+            let highlightedIndex = -1;
+            let suggestionButtons = [];
+
+            function setStatus(message, type = "") {
+                locationStatus.textContent = message;
+                locationStatus.className = "location-status";
+
+                if (type) {
+                    locationStatus.classList.add(
+                        `location-status-${type}`);
+                }
+            }
+
+            function clearCoordinates() {
+                latitudeInput.value = "";
+                longitudeInput.value = "";
+            }
+
+            function closeSuggestions() {
+                suggestionsContainer.replaceChildren();
+                suggestionsContainer.hidden = true;
+                locationInput.setAttribute("aria-expanded", "false");
+
+                highlightedIndex = -1;
+                suggestionButtons = [];
+            }
+
+            function setLocationLoading(isLoading) {
+                useLocationButton.disabled = isLoading;
+
+                locationButtonText.textContent = isLoading
+                    ? "Finding Location..."
+                    : "Use My Location";
+
+                useLocationButton.classList.toggle(
+                    "is-loading",
+                    isLoading);
+            }
+
+            function selectSuggestion(suggestion) {
+                locationInput.value = suggestion.displayName;
+                latitudeInput.value = suggestion.latitude ?? "";
+                longitudeInput.value = suggestion.longitude ?? "";
+
+                locationInput.dispatchEvent(
+                    new Event("change", { bubbles: true })
+                );
+
+                setStatus("Location selected.", "success");
+                closeSuggestions();
+            }
+
+            function updateHighlightedSuggestion() {
+                suggestionButtons.forEach(function (button, index) {
+                    const isHighlighted = index === highlightedIndex;
+
+                    button.classList.toggle(
+                        "is-highlighted",
+                        isHighlighted);
+
+                    button.setAttribute(
+                        "aria-selected",
+                        isHighlighted.toString());
+
+                    if (isHighlighted) {
+                        button.scrollIntoView({
+                            block: "nearest"
+                        });
+                    }
+                });
+            }
+
+                    function getPosition() {
+            return new Promise(function (resolve, reject) {
+                let watchId = null;
+                let timer = null;
+                let bestPosition = null;
+                let completed = false;
+                let graceTimer = null;
+
+                function cleanUp() {
+                    if (watchId !== null) {
+                        navigator.geolocation.clearWatch(watchId);
+                    }
+                    if (timer !== null) {
+                        window.clearTimeout(timer);
+                    }
+                    if (graceTimer !== null) {
+                        window.clearTimeout(graceTimer);
+                    }
+                }
+
+                function finishWithSuccess(position) {
+
+                    if (completed) {
+                        return;
+                    }
+
+                    completed = true;
+                    cleanUp();
+                    resolve(position);
+                }
+
+                function finishWithError(error) {
+                    if (completed) {
+                        return;
+                    }
+
+                    completed = true;
+                    cleanUp();
+                    reject(error);
+                }
+
+                timer = window.setTimeout(function () {
+                    if (bestPosition) {
+                        finishWithSuccess(bestPosition);
+                        return;
+                    }
+
+                    finishWithError({
+                        code: 3,
+                        message: "Location request timed out."
+                    });
+                }, 30000);
+
+                watchId = navigator.geolocation.watchPosition(
+                    function (position) {
+                        bestPosition = position;
+
+                        if (position.coords.accuracy <= 100) {
+                            finishWithSuccess(position);
+                        }
+                    },
+
+                    function (error) {
+                        if (error.code === error.PERMISSION_DENIED) {
+                            finishWithError(error);
+                        }
+
+                        /*
+                         * For temporary timeout or unavailable errors,
+                         * leave the watcher running until the overall
+                         * 30-second timer finishes.
+                         */
+                    },
+
+                    {
+                        enableHighAccuracy: false,
+                        maximumAge: 600000
+                    }
+                );
+            });
+        }
+
+            function displaySuggestions(suggestions) {
+                suggestionsContainer.replaceChildren();
+                suggestionButtons = [];
+                highlightedIndex = -1;
+
+                if (!Array.isArray(suggestions) ||
+                    suggestions.length === 0) {
+                    const emptyMessage =
+                        document.createElement("div");
+
+                    emptyMessage.className =
+                        "location-suggestion-message";
+
+                    emptyMessage.textContent =
+                        "No matching locations were found.";
+
+                    suggestionsContainer.appendChild(emptyMessage);
+                    suggestionsContainer.hidden = false;
+
+                    locationInput.setAttribute(
+                        "aria-expanded",
+                        "true");
+
+                    return;
+                }
+
+                suggestions.forEach(function (suggestion, index) {
+                    const button = document.createElement("button");
+
+                    button.type = "button";
+                    button.className = "location-suggestion";
+                    button.setAttribute("role", "option");
+                    button.setAttribute("aria-selected", "false");
+                    button.dataset.index = index.toString();
+
+                    const icon = document.createElement("span");
+                    icon.className = "suggestion-icon";
+                    icon.setAttribute("aria-hidden", "true");
+                    icon.textContent = "\u25CF";
+
+                    const text = document.createElement("span");
+                    text.className = "suggestion-text";
+                    text.textContent = suggestion.displayName;
+
+                    button.append(icon, text);
+
+                    button.addEventListener(
+                        "mousedown",
+                        function (event) {
+                            event.preventDefault();
+                        });
+
+                    button.addEventListener(
+                        "click",
+                        function () {
+                            selectSuggestion(suggestion);
+                        });
+
+                    suggestionsContainer.appendChild(button);
+                    suggestionButtons.push(button);
+                });
+
+                suggestionsContainer.hidden = false;
+
+                locationInput.setAttribute(
+                    "aria-expanded",
+                    "true");
+            }
+
+            async function searchLocations(query) {
+                if (currentRequestController) {
+                    currentRequestController.abort();
+                }
+
+                const requestController = new AbortController();
+                currentRequestController = requestController;
+
+                const parameters = new URLSearchParams({
+                    query: query
+                });
+
+                if (latitudeInput.value && longitudeInput.value)
+                {
+                    parameters.set(
+                        "latitude",
+                        latitudeInput.value);
+                    parameters.set(
+                        "longitude",
+                        longitudeInput.value);
+                }
+
+                setStatus("Searching for locations...");
+
+                try {
+                    const response = await fetch(
+                        `/Booking/SearchLocations?${parameters}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Accept": "application/json"
+                            },
+                            signal: currentRequestController.signal
+                        });
+
+                    if (!response.ok) {
+                        throw new Error("The location search failed.");
+                    }
+
+                    const suggestions = await response.json();
+                    if (locationInput.value.trim() !== query) {
+                        return;
+                    }
+
+                    displaySuggestions(suggestions);
+
+                    setStatus(
+                        suggestions.length > 0
+                            ? `${suggestions.length} location suggestion(s) found.`
+                            : "No matching locations were found."
+                    );
+                } catch (error) {
+                    if (error.name === "AbortError") {
+                        return;
+                    }
+                    closeSuggestions();
+
+                    setStatus(
+                        "Location suggestions are currently unavailable. You can still type the address manually.",
+                        "error");
+                }
+            }
+
+            locationInput.addEventListener(
+                "input",
+                function () {
+                    const query = locationInput.value.trim();
+
+                    /*
+                     * If the address is changed manually, coordinates
+                     * from an earlier suggestion must not be retained.
+                     */
+                    clearCoordinates();
+                    setStatus("");
+
+                    window.clearTimeout(debounceTimer);
+
+                    if (query.length < 3) {
+                        closeSuggestions();
+
+                        if (query.length > 0) {
+                            setStatus(
+                                "Enter at least 3 characters to search."
+                            );
+                        }
+
+                        return;
+                    }
+
+                    debounceTimer = window.setTimeout(
+                        function () {
+                            searchLocations(query);
+                        },
+                        350);
+                });
+
+            locationInput.addEventListener(
+                "keydown",
+                function (event) {
+                    if (suggestionsContainer.hidden ||
+                        suggestionButtons.length === 0) {
+                        return;
+                    }
+
+                    if (event.key === "ArrowDown") {
+                        event.preventDefault();
+
+                        highlightedIndex =
+                            (highlightedIndex + 1) %
+                            suggestionButtons.length;
+
+                        updateHighlightedSuggestion();
+                        return;
+                    }
+
+                    if (event.key === "ArrowUp") {
+                        event.preventDefault();
+
+                        highlightedIndex =
+                            highlightedIndex <= 0
+                                ? suggestionButtons.length - 1
+                                : highlightedIndex - 1;
+
+                        updateHighlightedSuggestion();
+                        return;
+                    }
+
+                    if (event.key === "Enter" &&
+                        highlightedIndex >= 0) {
+                        event.preventDefault();
+
+                        suggestionButtons[
+                            highlightedIndex
+                        ].click();
+
+                        return;
+                    }
+
+                    if (event.key === "Escape") {
+                        closeSuggestions();
+                    }
+                });
+
+            document.addEventListener(
+                "click",
+                function (event) {
+                    const clickedInsideLocation =
+                        event.target.closest(
+                            ".location-search-container");
+
+                    if (!clickedInsideLocation) {
+                        closeSuggestions();
+                    }
+                });
+
+            useLocationButton.addEventListener("click", async function () {
+                closeSuggestions();
+                clearCoordinates();
+                setStatus("");
+
+                        if (!window.isSecureContext) {
+            setStatus(
+                "Location access requires HTTPS. Open the secure HTTPS address for this website.",
+                "error"
+            );
+
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            setStatus(
+                "This browser does not support location access. Please enter the address manually.",
+                "error"
+            );
+
+            return;
+        }
+
+        if (navigator.permissions) {
+            try {
+                const permission = await navigator.permissions.query({
+                    name: "geolocation"
+                });
+
+                if (permission.state === "denied") {
+                    setStatus(
+                        "Location access is blocked. Allow location access in your browser settings, then try again.",
+                        "error"
+                    );
+
+                    return;
+                }
+            } catch {
+                /*
+                 * Continue because the Permissions API check is optional.
+                 */
+            }
+        }
+
+                setLocationLoading(true);
+                setStatus("Finding your location...");
+
+                try {
+                    const position = await getPosition();
+                    const { latitude, longitude } = position.coords;
+
+                    latitudeInput.value = latitude.toString();
+                    longitudeInput.value = longitude.toString();
+                    setStatus("Location found. Retrieving the address...");
+
+                    try {
+                        const response = await fetch(
+                            `/Booking/ReverseGeocode?latitude=${latitude}&longitude=${longitude}`,
+                            { headers: { "Accept": "application/json" } });
+
+                        if (!response.ok) throw new Error("Reverse geocoding failed.");
+
+                        const location = await response.json();
+                        if (!location.displayName) throw new Error("No address returned.");
+
+                        locationInput.value = location.displayName;
+                        locationInput.dispatchEvent(new Event("change", { bubbles: true }));
+                        setStatus("Your current location has been added.", "success");
+                    } catch {
+                        locationInput.value = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+                        setStatus("The coordinates were found, but a readable address was unavailable. You can edit the location manually.", "error");
+                    }
+                } catch (error) {
+                    const messages = {
+                        1: "Location permission was denied. Allow location access in the browser or enter the address manually.",
+                        2: "The device could not determine your location. Please enter the address manually.",
+                        3: "The device could not determine your location within 30 seconds. Check that device location services are enabled, then try again or search for the address manually."
+                    };
+                    setStatus(messages[error.code] ?? "Your location could not be retrieved. Please enter the address manually.", "error");
+                } finally {
+                    setLocationLoading(false);
+                }
+            });
+        });
+    </script>
+}
