@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../models/booking_list_model.dart';
 
 class BookingStatusChip extends StatelessWidget {
