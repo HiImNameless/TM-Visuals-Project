@@ -4,10 +4,8 @@
 }
 
 <div class="work-page">
-    <section>
+    <section class="work-hero">
         <h1 class="main-title">Our Work in Three Words</h1>
-        <hr class="work-divider" />
-
         <div class="three-cards">
             <article class="work-card">
                 <h2>Storytelling</h2>
@@ -26,6 +24,15 @@
 
     <section class="selected-work">
         <h2>Selected Work</h2>
+
+        <div class="category-filters">
+            <button type="button" class="filter-btn active" data-filter="all">All</button>
+            <button type="button" class="filter-btn" data-filter="Graduations">Graduations</button>
+            <button type="button" class="filter-btn" data-filter="Food">Food</button>
+            <button type="button" class="filter-btn" data-filter="Branding">Branding</button>
+            <button type="button" class="filter-btn" data-filter="Weddings">Weddings</button>
+        </div>
+
         @if (ViewData["PortfolioError"] is string portfolioError)
         {
             <p class="delivery-note" role="status">@portfolioError</p>
@@ -34,10 +41,11 @@
         {
             <p class="delivery-note">New work will appear here when it is added to the portfolio.</p>
         }
+
         <div class="portfolio-items">
             @foreach (var item in Model)
             {
-                <article class="portfolio-card">
+                <article class="portfolio-card" data-category="@item.Category">
                     @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                     {
                         @if (string.Equals(item.MediaType, "video", StringComparison.OrdinalIgnoreCase))
@@ -68,8 +76,26 @@
                 </article>
             }
         </div>
+
         <p class="delivery-note">
             Private client delivery. Completed client content is delivered through private links and is never shown here.
         </p>
     </section>
 </div>
+
+<script>
+    document.querySelectorAll('.filter-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.filter-btn').forEach(function (b) {
+                b.classList.remove('active');
+            });
+            btn.classList.add('active');
+
+            var filter = btn.dataset.filter;
+            document.querySelectorAll('.portfolio-card').forEach(function (card) {
+                card.style.display =
+                    (filter === 'all' || card.dataset.category === filter) ? '' : 'none';
+            });
+        });
+    });
+</script>
