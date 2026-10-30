@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-
 import '../models/booking_list_model.dart';
 
 final _day = DateFormat('EEE d MMM');
@@ -21,8 +20,7 @@ String fmtBlocks(List<TimeBlock> blocks, {int max = 2}) {
   return extra > 0 ? '$shown; +$extra more' : shown;
 }
 
-/// Add your currency symbol here (e.g. 'R', '\$') once you've settled on one.
-const kCurrencySymbol = '';
+const kCurrencySymbol = 'R';
 
 String fmtMoney(double? v) {
   if (v == null) return 'Not given';
