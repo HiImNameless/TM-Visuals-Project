@@ -1440,3 +1440,88 @@ body {
     .nav-auth-button:hover {
         color: #E0C61F;
     }
+
+/* ---------- My Content Page ---------- */
+
+.content-card {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 20px;
+    height: 100%; /* new */
+    transition: border-color 0.2s ease;
+}
+
+    .content-card:hover {
+        border-color: #f7b500;
+    }
+
+    .content-card h5 {
+        color: #f7b500;
+        font-weight: 600;
+    }
+
+    .content-card p {
+        color: #d0d0d0;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .content-card strong {
+        color: #ffffff;
+    }
+
+    .content-card .text-muted {
+        color: #a8a8a8 !important;
+    }
+
+.service-badge {
+    background: rgba(247, 181, 0, 0.15);
+    color: #f7b500;
+    border: 1px solid #f7b500;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.btn-download {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #f7b500;
+    color: #111;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    transition: background 0.2s ease;
+}
+
+    .btn-download:hover {
+        background: #ffd04a;
+        color: #111;
+    }
+
+    .btn-download:focus-visible,
+    .btn-back:focus-visible {
+        outline: 3px solid #ffffff;
+        outline-offset: 3px;
+    }
+
+.btn-back {
+    display: inline-block;
+    padding: 10px 20px;
+    background: transparent;
+    color: #f7b500;
+    border: 1px solid #f7b500;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    text-align: center;
+    transition: background 0.2s ease;
+}
+
+    .btn-back:hover {
+        background: rgba(247, 181, 0, 0.1);
+        color: #f7b500;
+    }
