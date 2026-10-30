@@ -690,25 +690,6 @@ body {
     padding: 14px 40px;
    }
 
-/* Brand name */
-.tm-logo {
-    display: flex;
-    flex-direction: column;
-    line-height: 1;
-    margin-right: 40px;
-    color: #E0C61F !important;
-}
-
-.tm-logo-top {
-    font-size: 34px;
-    font-weight: bold;
-    letter-spacing: 2px;
-}
-.tm-logo-bottom {
-    font-size: 26px;
-    letter-spacing: 3px;
-}
-
 /* Links */
 .tm-navbar .nav-link,
 .tm-navbar .text-dark {
@@ -1441,6 +1422,101 @@ body {
         color: #E0C61F;
     }
 
+/* ---------- Footer ---------- */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+.tm-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #444;
+    background-color: black;
+    padding: 28px 60px;
+}
+
+.footer-copy {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.footer-icons {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    font-size: 40px;
+}
+
+    .footer-icons a {
+        text-decoration: none;
+        transition: transform 0.2s;
+    }
+
+        .footer-icons a:hover {
+            transform: scale(1.15);
+        }
+
+.icon-whatsapp {
+    color: #25D366;
+}
+
+.icon-mail {
+    color: #EA4335;
+}
+
+.icon-tiktok {
+    color: white;
+}
+
+.icon-instagram {
+    color: #E1306C;
+}
+
+.footer-disclaimer {
+    margin: 14px 0 0;
+    text-align: center;
+    color: #FFB400;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.footer-contact {
+    text-align: center;
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+.footer-brand {
+    font-size: 28px;
+    line-height: 1.1;
+}
+
+
+@media (max-width: 768px) {
+    .tm-footer {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+}
+
+
+.tm-logo-img {
+    height: 70px;
+    width: auto;
+}
+
+.footer-logo-img {
+    height: 80px;
+    width: auto;
+}
 /* ---------- My Content Page ---------- */
 
 .content-card {
