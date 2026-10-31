@@ -78,14 +78,19 @@ class BookingsViewModel extends ChangeNotifier {
     switch (_filter) {
       case BookingFilter.needsAction:
         list.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+        break;
+
       case BookingFilter.confirmed:
         list.sort(
           (a, b) => (a.firstStart ?? a.createdAt).compareTo(
             b.firstStart ?? b.createdAt,
           ),
         );
+        break;
+
       default:
         list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        break;
     }
     return list;
   }

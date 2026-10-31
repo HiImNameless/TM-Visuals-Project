@@ -1,59 +1,27 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text.Json;
 using TMVisualsWebApp.Models;
 using TMVisualsWebApp.Services;
-using System.Text.Json;
 
 namespace TMVisualsWebApp.Controllers
 {
     public class HomeController : Controller
     {
-        private static List<Booking> bookings = new List<Booking>
-        {
-             new Booking
-             {
-                 Id = 1,
-                 Name = "Musa Bonga",
-                 Phone = "07123456789",
-                 Email = "user@email.com",
-                 Service = "Photography",
-                 EventType = "Wedding",
-                 NumberOfPeople = 25,
-                 Location = "Johannesburg, Sandton",
-                 Date = new DateTime(2026, 12 ,14),
-                 StartTime = new TimeSpan(11,0,0),
-                 FinishTime = new TimeSpan(16,0,0),
-                 Status = "Pending"
-             },
-             new Booking
-             {
-                 Id = 2,
-                 Name = "Musa Bonga",
-                 Phone = "07123456789",
-                 Email = "user@email.com",
-                 Service = "Video",
-                 EventType = "Birthday Party",
-                 NumberOfPeople = 40,
-                 Location = "Cape Town",
-                 Date = new DateTime (2026, 10, 10),
-                 StartTime = new TimeSpan(13,0,0),
-                 FinishTime = new TimeSpan(17,0,0),
-                 Status = "Confirmed"
-              }
-         };
-
-
         private readonly ILogger<HomeController> _logger;
         private readonly PortfolioCatalogService _portfolioCatalog;
+        private readonly BookingStore _store;
 
         public HomeController(
             ILogger<HomeController> logger,
-            PortfolioCatalogService portfolioCatalog)
+            PortfolioCatalogService portfolioCatalog,
+            BookingStore store)
         {
             _logger = logger;
             _portfolioCatalog = portfolioCatalog;
+            _store = store;
         }
 
         public IActionResult Index()
@@ -109,7 +77,7 @@ namespace TMVisualsWebApp.Controllers
                 FullName = "Musa Bonga",
                 Email = "musabonga@gmail.com",
                 PhoneNumber = null,
-                Bookings = bookings
+                Bookings = _store.All()
             };
 
             return View(user);
@@ -117,7 +85,7 @@ namespace TMVisualsWebApp.Controllers
 
         public IActionResult BookingStatus(int id)
         {
-            var booking = bookings.FirstOrDefault(b => b.Id == id);
+            var booking = _store.All().FirstOrDefault(b => b.Id == id);
 
             if (booking == null)
             {
@@ -127,48 +95,26 @@ namespace TMVisualsWebApp.Controllers
             return View(booking);
         }
 
+        // DELETE this entire block:
+        // private static readonly List<ClientContent> contentItems = new() { ... };
 
-        private static readonly List<ClientContent> contentItems = new()
-        {
-            new ClientContent
-            {
-                ContentId = 1,
-                BookingId = 1,
-                EventType = "Graduation Shoot",
-                Services = new List<string> { "Photography", "Videography" },
-                BookingDate = new DateTime(2026, 12, 25),
-                StartTime = new TimeSpan(13, 0, 0),
-                FinishTime = new TimeSpan(17, 0, 0),
-                Location = "CUT",
-                DeliveryLink = "https://example.com/download1",
-                AccessStatus = ContentAccessStatus.Available,
-            },
-
-            new ClientContent
-            {
-                ContentId = 2,
-                BookingId = 2,
-                EventType = "Wedding Shoot",
-                Services = new List<string> { "Photography", "Videography" },
-                BookingDate = new DateTime(2026, 12, 31),
-                StartTime = new TimeSpan(10,0,0),
-                FinishTime = new TimeSpan(18,0,0),
-                Location = "Bloem Hall",
-                DeliveryLink = "https://example.com/download2",
-                AccessStatus = ContentAccessStatus.Pending,
-            }
-        };
-
+        // REPLACE MyContent() with:
         public IActionResult MyContent()
         {
-            return View(contentItems);
+            var items = _store.All()
+                .Where(b => b.Status == "Confirmed" && b.Date.HasValue)
+                .OrderByDescending(b => b.Date)
+                .Select(b => new ClientContent(b))
+                .ToList();
+
+            return View(items);
         }
 
         [HttpGet]
         public IActionResult EditDetails()
         {
             // Use the same UserProfile object your Profile() action uses
-            var profile = new UserProfile { FullName = "Musa Bonga", Email = "musa@example.com", PhoneNumber = null};
+            var profile = new UserProfile { FullName = "Musa Bonga", Email = "musa@example.com", PhoneNumber = null };
             return View(profile);
         }
 
