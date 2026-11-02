@@ -43,6 +43,8 @@ builder.Services.AddHttpClient<PortfolioCatalogService>(client =>
     client.BaseAddress = new Uri("https://fswyeuiajsbdlkhhydnx.supabase.co");   // adjust to your real endpoint
 });
 builder.Services.AddHttpClient<ServicesCatalogService>();
+builder.Services.AddHttpClient("SupabaseInvoice");
+builder.Services.AddScoped<InvoiceCatalogService>();
 
 builder.Services.AddAuthorization();
 

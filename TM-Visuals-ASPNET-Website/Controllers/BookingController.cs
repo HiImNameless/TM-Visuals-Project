@@ -5,6 +5,8 @@ using System.Security.Claims;
 using System.Text.Json;
 using TMVisualsWebApp.Models;
 using TMVisualsWebApp.Services;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TMVisualsWebApp.Controllers
 {
@@ -44,6 +46,7 @@ namespace TMVisualsWebApp.Controllers
             return Json(new { days = _availability.GetMonth(year, month) });
         }
 
+        [Authorize]
         [HttpGet]
         [Authorize]
         public IActionResult CreateBooking()
@@ -51,9 +54,13 @@ namespace TMVisualsWebApp.Controllers
             // Don't leave an old confirmation sitting in TempData next to a new booking.
             TempData.Remove("BookingConfirmation");
 
-            return View(new Booking());
+            return View(new Booking
+            {
+                Email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty
+            });
         }
 
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize] //If Google sign-in populates the users and client tables then add (Roles = "Client") to the Authorize attribute to restrict bookings to signed-in clients only.
@@ -75,6 +82,12 @@ namespace TMVisualsWebApp.Controllers
                 nameof(Booking.AcceptTerms))]
             Booking booking)
         {
+
+            // Use the logged-in user's email so the booking shows on their Profile
+            booking.Email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
+            ModelState.Remove(nameof(Booking.Email));
+
+
             NormalizeBooking(booking);
             ValidateBooking(booking);
 
@@ -119,6 +132,7 @@ namespace TMVisualsWebApp.Controllers
             return RedirectToAction(nameof(Confirmation));
         }
 
+        [Authorize]
         [HttpGet]
         public IActionResult Confirmation()
         {
