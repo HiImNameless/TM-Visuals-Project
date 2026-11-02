@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using TMVisualsWebApp.Models;
 using TMVisualsWebApp.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace TMVisualsWebApp.Controllers
 {
@@ -20,17 +19,20 @@ namespace TMVisualsWebApp.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger<BookingController> _logger;
         private readonly BookingAvailabilityService _availability;
+        private readonly ServicesCatalogService _services;
 
         public BookingController(
             IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
             ILogger<BookingController> logger,
-            BookingAvailabilityService availability)
+            BookingAvailabilityService availability,
+            ServicesCatalogService services)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _logger = logger;
             _availability = availability;
+            _services = services;
         }
 
         // Availability must always be fresh, so it never let a browser or proxy cache it.
@@ -58,6 +60,34 @@ namespace TMVisualsWebApp.Controllers
             {
                 Email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty
             });
+        }
+
+        // Add: using Microsoft.AspNetCore.Mvc.Filters;
+        public override async Task OnActionExecutionAsync(
+            ActionExecutingContext context, ActionExecutionDelegate next)
+        {
+            if (context.ActionDescriptor.RouteValues["action"] == nameof(CreateBooking))
+            {
+                try
+                {
+                    var items = await _services.FetchActiveServicesAsync(
+                        context.HttpContext.RequestAborted);
+
+                    ViewBag.Services = items
+                        .Select(s => s.Name)
+                        .Where(n => !string.IsNullOrWhiteSpace(n))
+                        .ToList();
+                }
+                catch (Exception ex) when (
+                    ex is HttpRequestException or JsonException or
+                          InvalidOperationException or TaskCanceledException)
+                {
+                    _logger.LogError(ex, "Could not load services.");
+                    ViewBag.Services = new List<string>();
+                }
+            }
+
+            await next();
         }
 
         [Authorize]

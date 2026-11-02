@@ -147,5 +147,13 @@ namespace TMVisualsWebApp.Services
                 return true;
             }
         }
+        // removes a booking from the store, if the save fails to prevent reserving a time slot that is not actually booked in the database.
+        public void Remove(int id)   
+        {
+            lock (_lock)
+            {
+                _bookings.RemoveAll(b => b.Id == id);
+            }
+        }
     }
 }
