@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
+using System.Security.Claims;
 using System.Text.Json;
 using TMVisualsWebApp.Models;
 using TMVisualsWebApp.Services;
@@ -43,6 +45,7 @@ namespace TMVisualsWebApp.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public IActionResult CreateBooking()
         {
             // Don't leave an old confirmation sitting in TempData next to a new booking.
@@ -53,6 +56,7 @@ namespace TMVisualsWebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize] //If Google sign-in populates the users and client tables then add (Roles = "Client") to the Authorize attribute to restrict bookings to signed-in clients only.
         public IActionResult CreateBooking(
             [Bind(
                 nameof(Booking.Name),
@@ -94,7 +98,11 @@ namespace TMVisualsWebApp.Controllers
 
             // The status is set by the server, not accepted from the form.
             booking.Status = "Pending";
-
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+            {
+                return Forbid();
+            }
+            booking.UserId = userId;
             if (!_availability.TryReserve(booking))
             {
                 ModelState.AddModelError(
@@ -104,7 +112,7 @@ namespace TMVisualsWebApp.Controllers
 
                 return View(booking);
             }
-
+           
             TempData["BookingConfirmation"] =
                 JsonSerializer.Serialize(BuildConfirmation(booking));
 
@@ -146,8 +154,14 @@ namespace TMVisualsWebApp.Controllers
                 $"Date: {booking.Date:yyyy-MM-dd}",
                 $"Budget: R{booking.Budget:N2}",
                 $"Email: {booking.Email}",
-                $"Contact number: {booking.Phone}");
+                $"Contact number: {booking.Phone}",
+                $"Location: {booking.Location}",
+                $"Number of people: {booking.NumberOfPeople}",
+                $"Start time: {booking.StartTime:hh\\:mm}",
+                $"Finish time: {booking.FinishTime:hh\\:mm}"
+                );
 
+            //Strips out all non-digit characters from the WhatsApp number, so that it can be used in a wa.me link.
             var number = new string(
                 (_configuration["WhatsApp:Number"] ?? string.Empty)
                     .Where(char.IsDigit)
@@ -167,18 +181,21 @@ namespace TMVisualsWebApp.Controllers
             }
 
             return new BookingConfirmationViewModel
-            {
-                //BookingId = booking.Id,
-                //Name = booking.Name,
-                //Service = booking.Service,
-                //EventType = booking.EventType,
-                //Date = booking.Date,
-                //StartTime = booking.StartTime,
-                //FinishTime = booking.FinishTime,
-                //Location = booking.Location,
-                //Budget = booking.Budget,
-                //WhatsAppUrl = whatsAppUrl
-            };
+            {        
+                    BookingId = booking.Id,
+                    Name = booking.Name,
+                    Service = booking.Service,
+                    EventType = booking.EventType,
+                    Date = booking.Date,
+                    StartTime = booking.StartTime,
+                    FinishTime = booking.FinishTime,
+                    Location = booking.Location,
+                    Budget = booking.Budget,
+                    NumberOfPeople = booking.NumberOfPeople,
+                    WhatsAppUrl = whatsAppUrl,
+                    Status = booking.Status
+               
+        };
         }
 
         [HttpGet("/Booking/SearchLocations")]
@@ -206,7 +223,7 @@ namespace TMVisualsWebApp.Controllers
                        $"&lon={longitude.Value.ToString(CultureInfo.InvariantCulture)}";
             }
 
-            // Rough South Africa bounding box: minLon,minLat,maxLon,maxLat.
+            // Rough South Africa bounding box: minLon,minLat,maxLon,maxLat. Th
             url += "&bbox=16.3,-35.0,33.1,-22.0";
 
             try
@@ -269,12 +286,14 @@ namespace TMVisualsWebApp.Controllers
             {
                 return StatusCode(499);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(
-                    ex,
-                    "Location search failed for query '{Query}'.",
-                    query);
+                //KamoheloP: This may be a potentially sensitive log, so it is commented out for now.
+                //If you want to log the error, make sure to sanitize the query parameter to avoid logging sensitive information.
+                /* _logger.LogError(
+                     ex,
+                     "Location search failed for query '{Query}'.",
+                     query);*/
 
                 return StatusCode(StatusCodes.Status502BadGateway);
             }
@@ -284,13 +303,12 @@ namespace TMVisualsWebApp.Controllers
         public async Task<IActionResult> ReverseGeocode(
             double latitude, double longitude, CancellationToken ct)
         {
-            if (latitude is < -90 or > 90 ||
+            /*if (latitude is < -90 or > 90 ||
                 longitude is < -180 or > 180 ||
                 (latitude == 0 && longitude == 0))
             {
                 return BadRequest(
-                    new { message = "The supplied coordinates are invalid." });
-            }
+               */ //Scheduled to be removed if CoordinatePairAttribute works
 
             var url =
                 $"reverse?lat={latitude.ToString(CultureInfo.InvariantCulture)}" +
@@ -338,11 +356,13 @@ namespace TMVisualsWebApp.Controllers
                       JsonException or
                       OperationCanceledException)
             {
+                //KamoheloP:Again, this may be a potentially sensitive log, so it is commented out for now.
+                /*
                 _logger.LogError(
                     ex,
                     "Reverse geocode failed for {Lat},{Lon}.",
                     latitude,
-                    longitude);
+                    longitude);*/
 
                 return StatusCode(
                     StatusCodes.Status502BadGateway,
@@ -406,6 +426,7 @@ namespace TMVisualsWebApp.Controllers
             booking.Location = booking.Location?.Trim() ?? string.Empty;
         }
 
+        // ValidateBooking checks the Booking object for additional validation rules that are not covered by data annotations.
         private void ValidateBooking(Booking booking)
         {
             // AcceptTerms is validated by the MustBeTrue attribute on Booking.
@@ -437,7 +458,7 @@ namespace TMVisualsWebApp.Controllers
                     "Please enter a valid phone number (9 to 15 digits).");
             }
 
-            // South Africa is UTC+2 year-round.
+            // South Africa is UTC+2 year-round. This is used to check that the booking date/time is not in the past.
             var nowSast = DateTimeOffset.UtcNow.ToOffset(SastOffset);
 
             if (booking.Date.HasValue)
@@ -476,21 +497,7 @@ namespace TMVisualsWebApp.Controllers
                         nameof(booking.FinishTime),
                         "Bookings must be at least 1 hour long.");
                 }
-            }
-
-            if (booking.Latitude is < -90 or > 90)
-            {
-                ModelState.AddModelError(
-                    nameof(booking.Location),
-                    "The selected location has an invalid latitude.");
-            }
-
-            if (booking.Longitude is < -180 or > 180)
-            {
-                ModelState.AddModelError(
-                    nameof(booking.Location),
-                    "The selected location has an invalid longitude.");
-            }
+            }            
         }
     }
 }
