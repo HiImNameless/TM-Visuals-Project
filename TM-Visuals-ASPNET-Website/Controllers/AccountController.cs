@@ -464,16 +464,6 @@ namespace TMVisualsWebApp.Controllers
             }
         }//End of Login method
 
-            await SignInUserAsync(
-                userId,
-                result.User.Email ?? model.Email,
-                model.RememberMe);
-
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return LocalRedirect(returnUrl);
-
-            return RedirectToAction("Index", "Home");
-        }
 
         private async Task SignInUserAsync(
             string userId,

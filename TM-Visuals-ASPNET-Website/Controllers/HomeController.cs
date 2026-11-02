@@ -18,18 +18,24 @@ namespace TMVisualsWebApp.Controllers
         private readonly BookingStore _store;
         private readonly InvoiceCatalogService _invoiceCatalog;
 
+
+
+        private readonly ProfileStore _profiles;
+
         public HomeController(
             ILogger<HomeController> logger,
             PortfolioCatalogService portfolioCatalog,
             ServicesCatalogService servicesCatalog,
             BookingStore store,
-            InvoiceCatalogService invoiceCatalog)
+            InvoiceCatalogService invoiceCatalog,
+            ProfileStore profiles)
         {
             _logger = logger;
             _portfolioCatalog = portfolioCatalog;
             _servicesCatalog = servicesCatalog;
             _store = store;
             _invoiceCatalog = invoiceCatalog;
+            _profiles = profiles;
         }
 
         public IActionResult Index()
@@ -118,11 +124,13 @@ namespace TMVisualsWebApp.Controllers
                 TempData["InvoiceError"] = "Invoices are temporarily unavailable.";
             }
 
+            var saved = _profiles.Get(email);
+
             var user = new UserProfile
             {
-                FullName = first?.Name ?? email.Split('@')[0],
+                FullName = saved.Name ?? first?.Name ?? email.Split('@')[0],
                 Email = email,
-                PhoneNumber = first?.Phone,
+                PhoneNumber = saved.Phone ?? first?.Phone,
                 Bookings = myBookings,
                 Invoices = invoices.ToList()
             };
@@ -222,11 +230,13 @@ namespace TMVisualsWebApp.Controllers
                 .OrderByDescending(b => b.Date)
                 .FirstOrDefault();
 
+            var saved = _profiles.Get(email);
+
             var profile = new UserProfile
             {
-                FullName = latest?.Name ?? email.Split('@')[0],
+                FullName = saved.Name ?? latest?.Name ?? email.Split('@')[0],
                 Email = email,
-                PhoneNumber = latest?.Phone
+                PhoneNumber = saved.Phone ?? latest?.Phone
             };
 
             return View(profile);
@@ -239,7 +249,8 @@ namespace TMVisualsWebApp.Controllers
             ModelState.Remove("Bookings");
 
             // The email is the login, so always use the one from the cookie
-            model.Email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
+            var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
+            model.Email = email;
             ModelState.Remove("Email");
 
             if (!ModelState.IsValid)
@@ -247,10 +258,13 @@ namespace TMVisualsWebApp.Controllers
                 return View(model);
             }
 
-            // TODO: save to the database once Supabase is connected
+            _profiles.Save(email, model.FullName?.Trim(), model.PhoneNumber?.Trim());
+
             TempData["Message"] = "Details updated.";
             return RedirectToAction("Profile");
         }
+
+
     }
 }
 

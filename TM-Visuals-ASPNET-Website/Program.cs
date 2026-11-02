@@ -60,6 +60,7 @@ builder.Services.AddHttpClient("photon", client =>
 //availability and booking store
 builder.Services.AddSingleton<BookingStore>();
 builder.Services.AddSingleton<BookingAvailabilityService>();
+builder.Services.AddSingleton<ProfileStore>();
 
 var app = builder.Build();
 

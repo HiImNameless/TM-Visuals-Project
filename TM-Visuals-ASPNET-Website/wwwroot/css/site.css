@@ -679,6 +679,15 @@ body {
     margin: 0;
 }
 
+.profile-flash {
+    background: rgba(76, 175, 80, 0.15);
+    border: 1px solid #4CAF50;
+    color: #d5ecd7;
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 18px;
+}
+
 /* ---------- Booking status page ---------- */
 .booking-page {
     max-width: 700px;
