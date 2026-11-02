@@ -14,3 +14,4 @@
 *.cc
 *.cmake
 *.swift
+/TM-Visuals-ASPNET-Website/Services/SupabaseBookingService.cs
