@@ -351,8 +351,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     String displayEmail = vm.user?.email ?? 'tmvisuals@gmail.com';
     String displayRole = vm.user?.role ?? 'Admin';
     String displayBusiness = vm.user?.business ?? 'TM Visuals';
-    String displayServices =
-        vm.user?.servicesList?.join(' > ') ?? 'Photo > Videos > Combined';
+    String displayServices = vm.user?.servicesList.join(' > ') ?? '';
     String displayWhatsapp = vm.user?.whatsapp ?? '0833007857';
 
     int totalBookings = vm.user?.bookings ?? 3;
@@ -436,7 +435,23 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         ],
       ),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
-      body: ListView(
+      body: vm.isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : vm.user == null
+        ? Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Your profile could not be loaded.'),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: vm.fetchAdminProfile,
+                  child: const Text('Try again'),
+                ),
+              ],
+            ),
+          )
+        : ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         children: [
           // ---------- User Card ----------
