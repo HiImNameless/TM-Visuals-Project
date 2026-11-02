@@ -7,6 +7,11 @@
 
     <h2>My Account</h2>
 
+    @if (TempData["Message"] is string flash)
+    {
+        <div class="profile-flash">@flash</div>
+    }
+
     <div class="user-row">
         <div class="avatar">MB</div>
         <div>
