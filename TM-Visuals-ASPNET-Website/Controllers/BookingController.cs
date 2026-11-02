@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
 using TMVisualsWebApp.Models;
 using TMVisualsWebApp.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace TMVisualsWebApp.Controllers
 {
@@ -20,17 +19,20 @@ namespace TMVisualsWebApp.Controllers
         private readonly IConfiguration _configuration;
         private readonly ILogger<BookingController> _logger;
         private readonly BookingAvailabilityService _availability;
+        private readonly ServicesCatalogService _services;
 
         public BookingController(
             IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
             ILogger<BookingController> logger,
-            BookingAvailabilityService availability)
+            BookingAvailabilityService availability,
+            ServicesCatalogService services)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _logger = logger;
             _availability = availability;
+            _services = services;
         }
 
         // Availability must always be fresh, so it never let a browser or proxy cache it.
@@ -60,6 +62,34 @@ namespace TMVisualsWebApp.Controllers
             });
         }
 
+        // Add: using Microsoft.AspNetCore.Mvc.Filters;
+        public override async Task OnActionExecutionAsync(
+            ActionExecutingContext context, ActionExecutionDelegate next)
+        {
+            if (context.ActionDescriptor.RouteValues["action"] == nameof(CreateBooking))
+            {
+                try
+                {
+                    var items = await _services.FetchActiveServicesAsync(
+                        context.HttpContext.RequestAborted);
+
+                    ViewBag.Services = items
+                        .Select(s => s.Name)
+                        .Where(n => !string.IsNullOrWhiteSpace(n))
+                        .ToList();
+                }
+                catch (Exception ex) when (
+                    ex is HttpRequestException or JsonException or
+                          InvalidOperationException or TaskCanceledException)
+                {
+                    _logger.LogError(ex, "Could not load services.");
+                    ViewBag.Services = new List<string>();
+                }
+            }
+
+            await next();
+        }
+
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -79,6 +109,7 @@ namespace TMVisualsWebApp.Controllers
                 nameof(Booking.Longitude),
                 nameof(Booking.NumberOfPeople),
                 nameof(Booking.Budget),
+                nameof(Booking.Requirements),
                 nameof(Booking.AcceptTerms))]
             Booking booking)
         {
@@ -171,6 +202,7 @@ namespace TMVisualsWebApp.Controllers
                 $"Contact number: {booking.Phone}",
                 $"Location: {booking.Location}",
                 $"Number of people: {booking.NumberOfPeople}",
+                $"Requirements: {(string.IsNullOrWhiteSpace(booking.Requirements) ? "None" : booking.Requirements)}",
                 $"Start time: {booking.StartTime:hh\\:mm}",
                 $"Finish time: {booking.FinishTime:hh\\:mm}"
                 );
@@ -438,6 +470,8 @@ namespace TMVisualsWebApp.Controllers
             booking.Phone = booking.Phone?.Trim() ?? string.Empty;
             booking.Email = booking.Email?.Trim() ?? string.Empty;
             booking.Location = booking.Location?.Trim() ?? string.Empty;
+            booking.Requirements = string.IsNullOrWhiteSpace(booking.Requirements) ? null : booking.Requirements?.Trim();
+
         }
 
         // ValidateBooking checks the Booking object for additional validation rules that are not covered by data annotations.

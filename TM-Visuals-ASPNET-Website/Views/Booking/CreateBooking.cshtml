@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Create Booking";
+    var services = ViewBag.Services as List<string> ?? new List<string>();
 }
 
 
@@ -62,9 +63,11 @@
             <div class="field">
                 <label asp-for="Service"></label>
 
-                <select asp-for="Service" class="booking-input">
-                    <option value="">Select a service</option>
-                    @foreach (var service in BookingOptions.Services)
+                <select asp-for="Service" class="booking-input" disabled="@(services.Count == 0)">
+                    <option value="">
+                        @(services.Count == 0 ? "Services are currently unavailable" : "Select a service")
+                    </option>
+                    @foreach (var service in services)
                     {
                         <option value="@service">@service</option>
                     }
@@ -267,7 +270,19 @@
             <span asp-validation-for="Budget"
                   class="field-validation-error"></span>
         </div>
+        
+        <div class="field full-field">
+            <label asp-for="Requirements"></label>
 
+            <textarea asp-for="Requirements"
+                      class="booking-input"
+                      rows="4"
+                      maxlength="1000"
+                      placeholder="Anything we should know? e.g. shot list, dress code, special requests"></textarea>
+
+            <span asp-validation-for="Requirements"
+                  class="field-validation-error"></span>
+        </div>
         <div class="terms-card">
             <h2>Before you submit</h2>
 

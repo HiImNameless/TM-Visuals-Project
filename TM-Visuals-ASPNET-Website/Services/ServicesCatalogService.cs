@@ -67,6 +67,16 @@ namespace TMVisualsWebApp.Services
                 })
                 .ToList();
         }
+        public async Task<List<string>> FetchActiveServiceNamesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            var items = await FetchActiveServicesAsync(cancellationToken);
+            return items
+                .Select(s => s.Name)
+                .Where(n => !string.IsNullOrWhiteSpace(n))
+                .OrderBy(n => n)
+                .ToList();
+        }
 
         private static string ReadString(JsonElement element, string propertyName) =>
             element.TryGetProperty(propertyName, out var value) &&

@@ -43,11 +43,8 @@ class AdminProfileViewModel extends ChangeNotifier {
           .eq('user_id', authUser.id)
           .single();
 
-      final adminList = userData['admin'] as List?;
-      String activeAdminId = '';
-      if (adminList != null && adminList.isNotEmpty) {
-        activeAdminId = adminList.first['admin_id'] ?? '';
-      }
+      final profile = AdminUser.fromJson(userData);
+      final activeAdminId = profile.adminId;  
 
       List serviceData = [];
       if (activeAdminId.isNotEmpty) {
