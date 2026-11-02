@@ -42,7 +42,7 @@ class _CalendarBody extends StatelessWidget {
     final cells = ((offset + days + 6) ~/ 7) * 7;
     return Scaffold(
       appBar: AppBar(title: const Text('TM Visuals')),
-      bottomNavigationBar: AdminBottomNav(currentIndex: 1, onReturn: vm.load),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
       body: AdminContent(
         child: RefreshIndicator(
           onRefresh: vm.load,

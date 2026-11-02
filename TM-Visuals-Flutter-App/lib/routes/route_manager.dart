@@ -15,6 +15,7 @@ import '../views/portfolio_content.dart';
 import '../views/service_list_view.dart';
 import '../views/clients.dart';
 import '../views/portfolio_gallery.dart';
+import '../views/admin_dashboard.dart';
 
 class RouteManager {
   static const calendar = '/calendar',
@@ -34,9 +35,10 @@ class RouteManager {
     SupabaseClient? client,
   }) {
     final WidgetBuilder builder = switch (settings.name) {
-      '/' || calendar => (_) => (CalendarScreen(
-        service: CalendarService(supabase: client),
-      )),
+      '/' => (_) => AdminDashboard(),
+calendar => (_) => CalendarScreen(
+  service: CalendarService(supabase: client),
+),
       bookings => (_) => const BookingsScreen(),
       profile => (_) => AdminProfileScreen(),
       more => (_) => const AdminMoreScreen(),

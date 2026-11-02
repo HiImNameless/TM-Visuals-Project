@@ -434,6 +434,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
           const SizedBox(width: 8),
         ],
       ),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 3),
+      body: ListView(
       bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
       body: vm.isLoading
         ? const Center(child: CircularProgressIndicator())
