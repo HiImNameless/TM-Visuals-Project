@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_bottom_nav.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -224,47 +225,12 @@ Expanded(
     ],
   ),
 ),
-), ],),
+),
+],
+),
 
       // Bottom navigation styled to match the existing screens
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: accentColor,
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 0,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.black54,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        onTap: (index) {
-          if (index == 4) {
-            Scaffold.of(context).openDrawer();
-          } else if (index != 0) {
-          
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.photo_library_outlined),
-            label: 'Content',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined),
-            label: 'Calendar',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle_outlined),
-            label: 'Profile',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu),
-            label: 'Menu',
-          ),
-        ],
-      ),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 0),
     );
   }
 

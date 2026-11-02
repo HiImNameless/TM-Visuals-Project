@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '/models/portfolio_model.dart';
 import '/viewmodels/portfolio_view_model.dart';
 import '/widgets/portfolio_widgets.dart';
+import '../widgets/admin_bottom_nav.dart';
 
 const Color _yellow = Color(0xFFFFB900);
 const Color _background = Colors.black;
@@ -182,12 +183,6 @@ class _PortfolioContentScreenState extends State<PortfolioContentScreen> {
           title: const Text(
             'TM Visuals',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-          ),
-          leading: IconButton(
-            tooltip: 'Back',
-            icon: const Icon(Icons.arrow_back),
-            onPressed:
-                vm.isUploading ? null : () => Navigator.maybePop(context),
           ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
@@ -488,8 +483,8 @@ class _PortfolioContentScreenState extends State<PortfolioContentScreen> {
                     height: 48,
                     child: OutlinedButton(
                       onPressed: vm.isUploading
-                          ? null
-                          : () => Navigator.maybePop(context),
+    ? null
+    : () => Navigator.pushReplacementNamed(context, '/'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white,
                         side: const BorderSide(color: _yellow),
@@ -505,6 +500,7 @@ class _PortfolioContentScreenState extends State<PortfolioContentScreen> {
             ),
           ),
         ),
+        bottomNavigationBar: const AdminBottomNav(currentIndex: 1),
       ),
     );
   }

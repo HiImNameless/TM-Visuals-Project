@@ -9,7 +9,7 @@ class AdminMoreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('More')),
-    bottomNavigationBar: const AdminBottomNav(currentIndex: 3),
+    bottomNavigationBar: const AdminBottomNav(currentIndex: 4),
     body: AdminContent(
       child: ListView(
         padding: const EdgeInsets.all(20),
