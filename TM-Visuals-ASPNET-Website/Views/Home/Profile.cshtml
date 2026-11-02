@@ -7,6 +7,11 @@
 
     <h2>My Account</h2>
 
+    @if (TempData["Message"] is string flash)
+    {
+        <div class="profile-flash">@flash</div>
+    }
+
     <div class="user-row">
         <div class="avatar">MB</div>
         <div>
@@ -31,6 +36,45 @@
                     <span class="booking-view">View details &rarr;</span>
                 </div>
             </a>
+        }
+        @if (!Model.Bookings.Any())
+        {
+            <p class="booking-empty">You have no bookings yet.</p>
+        }
+    </div>
+
+    <hr class="line" />
+
+    <h3>My Invoices</h3>
+    @if (!string.IsNullOrWhiteSpace(TempData["InvoiceError"]?.ToString()))
+    {
+        <p class="invoice-message">@TempData["InvoiceError"]</p>
+    }
+    <div class="invoice-list">
+        @foreach (var invoice in Model.Invoices)
+        {
+            var label = string.IsNullOrWhiteSpace(invoice.Reference)
+                ? "Invoice"
+                : invoice.Reference;
+            <div class="invoice-card">
+                <div>
+                    <strong>@label</strong>
+                    @if (invoice.CreatedAt.HasValue)
+                    {
+                        <small>Uploaded @invoice.CreatedAt.Value.ToString("dd MMMM yyyy")</small>
+                    }
+                </div>
+                <a asp-controller="Home"
+                   asp-action="DownloadInvoice"
+                   asp-route-id="@invoice.Id">
+                    <span>Download</span>
+                    <span aria-hidden="true">&darr;</span>
+                </a>
+            </div>
+        }
+        @if (!Model.Invoices.Any())
+        {
+            <p class="invoice-empty">You have no invoices yet.</p>
         }
     </div>
 

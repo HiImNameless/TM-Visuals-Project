@@ -1,13 +1,15 @@
 ﻿
-using System.Net.Http.Json;
-using System.Security.Cryptography;
-using System.Security.Claims;
-using System.Text;
-using System.Text.Json.Serialization;
+using Azure;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using System.Net.Http.Json;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using TMVisualsWebApp.Models.Account;
 
 namespace TMVisualsWebApp.Controllers
@@ -28,6 +30,28 @@ namespace TMVisualsWebApp.Controllers
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _logger = logger;
+        }
+
+        //Helper method to read Supabase error response and extract error code and message
+        private static (string? Code, string? Message) ReadSupabaseError(string body)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(body);
+                var root = doc.RootElement;
+
+                var code = root.TryGetProperty("error_code", out var c) ? c.GetString() : null;
+                var msg = root.TryGetProperty("msg", out var m) ? m.GetString()
+                        : root.TryGetProperty("error_description", out var d) ? d.GetString()
+                        : root.TryGetProperty("message", out var m2) ? m2.GetString()
+                        : null;
+
+                return (code, msg);
+            }
+            catch (JsonException)
+            {
+                return (null, null);
+            }
         }
 
         [HttpGet]
@@ -65,12 +89,41 @@ namespace TMVisualsWebApp.Controllers
                 });
 
             using var response = await client.SendAsync(request);
+           
+            var responseBody = await response.Content.ReadAsStringAsync();
+        
 
             if (!response.IsSuccessStatusCode)
             {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Registration failed. Check your details and try again.");
+                string? errorCode = null;
+                string? message = null;
+
+                try
+                {
+                    using var doc = JsonDocument.Parse(responseBody);
+                    var root = doc.RootElement;
+
+                    errorCode = root.TryGetProperty("error_code", out var c) ? c.GetString() : null;
+                    message = root.TryGetProperty("msg", out var m) ? m.GetString()
+                            : root.TryGetProperty("message", out var m2) ? m2.GetString()
+                            : null;
+                }
+                catch (JsonException) { }
+
+                _logger.LogWarning(
+                    "Supabase signup failed: HTTP {Status}, code {Code}, message {Message}",
+                    (int)response.StatusCode, errorCode, message);
+
+                var userMessage = errorCode switch
+                {
+                    "over_email_send_rate_limit" =>
+                        "We're receiving a lot of sign-ups right now. Please try again in a little while.",
+                    "weak_password" =>
+                        "That password is too weak. Please choose a stronger one.",
+                    _ => "Registration failed. Check your details and try again."
+                };
+
+                ModelState.AddModelError(string.Empty, userMessage);
 
                 return View(model);
             }
@@ -139,7 +192,7 @@ namespace TMVisualsWebApp.Controllers
             string? code,
             string? state,
             string? error,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken, string? error_description)//added error_description
         {
             var verifier = Request.Cookies[GoogleVerifierCookie];
             var expectedState = Request.Cookies[GoogleStateCookie];
@@ -150,6 +203,15 @@ namespace TMVisualsWebApp.Controllers
                 !HasMatchingState(state, expectedState) ||
                 string.IsNullOrWhiteSpace(verifier))
             {
+                //added error_description to the log for better debugging
+                _logger.LogWarning(
+           "Google callback rejected: error {Error}, description {Description}, " +
+           "hasCode {HasCode}, stateMatches {StateOk}, hasVerifier {HasVerifier}",
+           error, error_description,
+           !string.IsNullOrWhiteSpace(code),
+           HasMatchingState(state, expectedState),
+           !string.IsNullOrWhiteSpace(verifier));
+
                 TempData["AuthMessage"] =
                     "Google sign-in could not be completed. Please try again.";
                 return RedirectToAction(nameof(Login));
@@ -169,16 +231,19 @@ namespace TMVisualsWebApp.Controllers
                 key,
                 new { auth_code = code, code_verifier = verifier });
 
-            using var response = await client.SendAsync(
-                request,
-                cancellationToken);
-            if (!response.IsSuccessStatusCode)
-            {
+             using var response = await client.SendAsync(
+                 request,
+                 cancellationToken);
+             if (!response.IsSuccessStatusCode)
+             {
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                var (errCode, errMessage) = ReadSupabaseError(body);
                 _logger.LogWarning(
-                    "Supabase Google sign-in code exchange returned HTTP {StatusCode}.",
-                    (int)response.StatusCode);
-                TempData["AuthMessage"] =
-                    "Google sign-in could not be completed. Please try again.";
+                    "Google code exchange failed: HTTP {Status}, code {Code}, message {Message}",
+                    (int)response.StatusCode, errCode, errMessage);
+
+                  TempData["AuthMessage"] =
+                  "Registration submitted. Check your email to confirm your account, then sign in.";
                 return RedirectToAction(nameof(Login));
             }
 
@@ -198,6 +263,7 @@ namespace TMVisualsWebApp.Controllers
                 userId,
                 result.User.Email,
                 rememberMe: false);
+            TempData["Success"] = "You're now signed in.";
             return RedirectToAction("Index", "Home");
         }
 
@@ -312,16 +378,19 @@ namespace TMVisualsWebApp.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(
-            LoginViewModel model)
+            LoginViewModel model, string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
+
             if (!ModelState.IsValid)
                 return View(model);
 
@@ -336,37 +405,65 @@ namespace TMVisualsWebApp.Controllers
                 key,
                 new { email = model.Email, password = model.Password });
 
-            using var response = await client.SendAsync(request);
 
-            if (!response.IsSuccessStatusCode)
+            // Log the request details for debugging
+            try
             {
+                using var response = await client.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    var (code, message) = ReadSupabaseError(body);
+
+                    _logger.LogWarning(
+                        "Supabase sign-in failed: HTTP {Status}, code {Code}, message {Message}",
+                        (int)response.StatusCode, code, message);
+
+                    var userMessage = code switch
+                    {
+                        "email_not_confirmed" =>
+                            "Please confirm your email address before signing in.",
+                        "over_request_rate_limit" or "over_email_send_rate_limit" =>
+                            "Too many attempts. Please try again in a little while.",
+                        _ => "Invalid email or password."
+                    };
+
+                    ModelState.AddModelError(string.Empty, userMessage);
+                    return View(model);
+                }
+
+                var result = await response.Content
+                    .ReadFromJsonAsync<SupabaseLoginResponse>();
+
+                if (result?.User?.Id is not string userId ||
+                    string.IsNullOrWhiteSpace(userId))
+                {
+                    ModelState.AddModelError(string.Empty, "Unable to complete sign-in.");
+                    return View(model);
+                }
+
+                await SignInUserAsync(
+                    userId,
+                    result.User.Email ?? model.Email,
+                    model.RememberMe);
+
+                TempData["Success"] = "Welcome back! You're now signed in.";
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex) when (
+                ex is HttpRequestException or JsonException or TaskCanceledException)
+            {
+                _logger.LogError(ex, "Supabase sign-in request failed.");
+
                 ModelState.AddModelError(
                     string.Empty,
-                    "Invalid email or password.");
+                    "We couldn't reach the sign-in service. Please try again.");
 
                 return View(model);
             }
+        }//End of Login method
 
-            var result = await response.Content
-                .ReadFromJsonAsync<SupabaseLoginResponse>();
-
-            if (result?.User?.Id is not string userId ||
-                string.IsNullOrWhiteSpace(userId))
-            {
-                ModelState.AddModelError(
-                    string.Empty,
-                    "Unable to complete sign-in.");
-
-                return View(model);
-            }
-
-            await SignInUserAsync(
-                userId,
-                result.User.Email ?? model.Email,
-                model.RememberMe);
-
-            return RedirectToAction("Index", "Home");
-        }
 
         private async Task SignInUserAsync(
             string userId,
@@ -394,6 +491,7 @@ namespace TMVisualsWebApp.Controllers
                         rememberMe ? 24 : 2)
                 });
         }
+
 
         private static HttpRequestMessage CreateSupabaseRequest(
             HttpMethod method,
@@ -437,6 +535,7 @@ namespace TMVisualsWebApp.Controllers
                        expectedBytes);
         }
 
+        //Checks if Supabase Auth settings are configured and valid. Returns true if valid, false otherwise.
         private bool TryGetSupabaseAuthSettings(out string url, out string key)
         {
             url = _configuration["Supabase:Url"]?.TrimEnd('/') ?? string.Empty;
@@ -462,13 +561,15 @@ namespace TMVisualsWebApp.Controllers
             public SupabaseUser? User { get; set; }
         }
 
+
+        //Logs Out the user
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme);
-
+            TempData["Success"] = "You've been signed out.";
             return RedirectToAction("Index", "Home");
         }
 

@@ -128,6 +128,160 @@ body {
     min-height: 380px;
 }
 
+/* Services page */
+/* ---------- Services page ---------- */
+.services-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 24px 90px;
+}
+
+/* Hero banner with the same photo as My Work */
+.services-hero {
+    margin: 0 -24px;
+    padding: 90px 24px 40px;
+    background: linear-gradient(rgba(0, 0, 0, .45), rgba(0, 0, 0, .75)), url('/images/work-hero.png') center / cover no-repeat;
+}
+
+.services-eyebrow {
+    margin-bottom: 8px;
+    color: #FFB400;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.services-hero h1 {
+    max-width: 520px;
+    color: #fff;
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 700;
+    letter-spacing: 3px;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+    .services-hero h1 span {
+        display: block;
+        color: #FFB400;
+    }
+
+.services-intro {
+    max-width: 520px;
+    margin-top: 18px;
+    color: #d0d0d0;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.services-line {
+    width: 80px;
+    height: 3px;
+    margin: 28px 0 0;
+    border: 0;
+    background: #FFB400;
+    opacity: 1;
+}
+
+/* Packages */
+.services-packages {
+    padding-top: 48px;
+}
+
+.services-title {
+    margin-bottom: 24px;
+    color: #fff;
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+}
+
+.service-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 240px;
+    padding: 24px;
+    border: 1px solid rgba(255, 180, 0, 0.18);
+    background: #171717;
+    transition: transform .35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow .35s ease, border-color .35s ease;
+}
+
+    .service-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        border-color: #FFB400;
+        box-shadow: 0 14px 28px rgba(255, 180, 0, 0.25);
+    }
+
+    .service-card h3 {
+        margin-bottom: 12px;
+        color: #FFB400;
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+    .service-card p,
+    .services-message {
+        color: #ddd;
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+
+/* Gold bar and button */
+.services-ready {
+    margin-top: 36px;
+    padding: 12px 18px;
+    border: 1px solid #FFB400;
+    background: rgba(255, 180, 0, 0.12);
+    color: #FFB400;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.services-booking {
+    margin-top: 40px;
+    text-align: center;
+}
+
+    .services-booking a {
+        display: inline-block;
+        min-width: 220px;
+        padding: 12px 24px;
+        border-radius: 6px;
+        background: #FFB400;
+        color: #111;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform .3s cubic-bezier(0.34, 1.56, 0.64, 1), background .2s;
+    }
+
+        .services-booking a:hover {
+            transform: translateY(-3px) scale(1.05);
+            background: #ffc933;
+            color: #111;
+        }
+
+@media (min-width: 768px) {
+    .services-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .services-hero {
+        padding-top: 60px;
+    }
+}
+
 /* Feature titles */
 .home-features {
     display: flex;
@@ -418,6 +572,60 @@ body {
 }
 
 /* ---------- Profile page ---------- */
+.invoice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.invoice-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 16px 18px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: #151515;
+}
+
+.invoice-card > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.invoice-card strong {
+    overflow-wrap: anywhere;
+}
+
+.invoice-card small,
+.invoice-empty,
+.invoice-message {
+    color: #aaa;
+}
+
+.invoice-card a {
+    flex-shrink: 0;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding: 9px 16px;
+    border-radius: 6px;
+    background: #E0C61F;
+    color: #111;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+@media (max-width: 576px) {
+    .invoice-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+
 .content {
     max-width: 900px;
     margin: 0 auto;
@@ -464,6 +672,21 @@ body {
         padding: 14px;
         border-radius: 12px;
     }
+
+.booking-empty {
+    color: #aaa;
+    font-size: 14px;
+    margin: 0;
+}
+
+.profile-flash {
+    background: rgba(76, 175, 80, 0.15);
+    border: 1px solid #4CAF50;
+    color: #d5ecd7;
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 18px;
+}
 
 /* ---------- Booking status page ---------- */
 .booking-page {
@@ -1910,3 +2133,565 @@ main {
         background: rgba(247, 181, 0, 0.1);
         color: #f7b500;
     }
+
+
+
+/* =========================================================
+   Hover and interaction effects (navbar and buttons)
+   ========================================================= */
+
+/* ---------- Navbar links ---------- */
+.tm-navbar .nav-link {
+    position: relative;
+    transition: color 0.25s ease, background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+    .tm-navbar .nav-link:hover {
+        color: #E0C61F !important;
+        background-color: rgba(224, 198, 31, 0.12);
+        transform: translateY(-2px);
+    }
+
+    /* ---------- The yellow active pill ---------- */
+    .tm-navbar .nav-link.active {
+        background: linear-gradient(135deg, #FFE066, #E0C61F);
+        color: #000 !important;
+        font-weight: bold;
+        box-shadow: 0 0 14px rgba(224, 198, 31, 0.45);
+        animation: pillGlow 2.6s ease-in-out infinite;
+    }
+
+        .tm-navbar .nav-link.active:hover {
+            background: linear-gradient(135deg, #FFEA8A, #FFD21F);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(224, 198, 31, 0.65);
+        }
+
+@keyframes pillGlow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(224, 198, 31, 0.35);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(224, 198, 31, 0.7);
+    }
+}
+
+/* Logo and Logout */
+.tm-logo-img {
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.tm-logo:hover .tm-logo-img {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 8px rgba(224, 198, 31, 0.6));
+}
+
+.nav-auth-button {
+    transition: color 0.25s ease, background-color 0.25s ease, transform 0.25s ease;
+}
+
+    .nav-auth-button:hover {
+        color: #E0C61F;
+        background-color: rgba(224, 198, 31, 0.12);
+        transform: translateY(-2px);
+    }
+
+/* ---------- Gold buttons: lift, glow and shine sweep ---------- */
+.buttons a,
+.auth-button {
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+    .buttons a::before,
+    .auth-button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -120%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+        transform: skewX(-20deg);
+        transition: left 0.6s ease;
+    }
+
+    .buttons a:hover,
+    .auth-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 24px rgba(224, 198, 31, 0.45);
+        filter: brightness(1.05);
+    }
+
+        .buttons a:hover::before,
+        .auth-button:hover::before {
+            left: 140%;
+        }
+
+/* ---------- Outline buttons: fill with gold on hover ---------- */
+.home-btn,
+.auth-google,
+.action-btn.back {
+    transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+    .home-btn:hover,
+    .auth-google:hover,
+    .action-btn.back:hover {
+        background-color: #E0C61F;
+        color: #000;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 22px rgba(224, 198, 31, 0.4);
+    }
+
+/* Cancel booking turns solid red */
+.action-btn.cancel {
+    transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+    .action-btn.cancel:hover {
+        background-color: #d9534f;
+        color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 22px rgba(217, 83, 79, 0.45);
+    }
+
+/* ---------- Press effect on every button ---------- */
+.buttons a:active,
+.auth-button:active,
+.home-btn:active,
+.auth-google:active,
+.action-btn:active {
+    transform: translateY(0) scale(0.97);
+    box-shadow: none;
+}
+
+/* ---------- Respect "reduce motion" settings ---------- */
+@media (prefers-reduced-motion: reduce) {
+    .tm-navbar .nav-link.active {
+        animation: none;
+    }
+
+    .buttons a::before,
+    .auth-button::before {
+        display: none;
+    }
+
+    * {
+        transition-duration: 0.01s !important;
+    }
+}
+
+
+
+/* =========================================================
+   Booking form polish (light touch)
+   Scoped to .booking-page so other pages are not affected.
+   ========================================================= */
+
+/* Heading with a small gold accent */
+.booking-page .booking-heading h1 {
+    position: relative;
+    padding-bottom: 14px;
+}
+
+    .booking-page .booking-heading h1::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 48px;
+        height: 3px;
+        margin-left: -24px;
+        border-radius: 2px;
+        background: #E0C61F;
+    }
+
+/* Form card */
+.booking-page .booking-form {
+    background: #0e0e0e;
+    border: 1px solid #262626;
+    border-radius: 18px;
+    padding: 32px;
+}
+
+/* Labels */
+.booking-page .field label {
+    color: #d8d8d8;
+    font-size: 0.9rem;
+}
+
+/* Fields: dark, with a gold focus glow */
+.booking-page .booking-input,
+.booking-page .currency-input {
+    background-color: #1a1a1a;
+    color: #f2f2f2;
+    border: 1px solid #333;
+    border-radius: 10px;
+    color-scheme: dark;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+    .booking-page .booking-input::placeholder,
+    .booking-page .currency-input input::placeholder {
+        color: #777;
+    }
+
+    .booking-page .booking-input:hover,
+    .booking-page .currency-input:hover {
+        border-color: #5a4d10;
+    }
+
+    .booking-page .booking-input:focus,
+    .booking-page .currency-input:focus-within {
+        background-color: #202020;
+        border-color: #E0C61F;
+        box-shadow: 0 0 0 3px rgba(224, 198, 31, 0.2);
+        outline: none;
+    }
+
+    /* Budget: dark field with a gold "R" */
+    .booking-page .currency-input span {
+        color: #E0C61F;
+        font-weight: 600;
+    }
+
+    .booking-page .currency-input input {
+        background: transparent;
+        color: #f2f2f2;
+        border: 0;
+        outline: none;
+    }
+
+/* Dropdown arrow in gold */
+.booking-page select.booking-input {
+    -webkit-appearance: none;
+    appearance: none;
+    padding-right: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23E0C61F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+
+/* Location button and suggestions */
+.booking-page .use-location-button {
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+    .booking-page .use-location-button:hover:not(:disabled) {
+        background-color: #E0C61F;
+        color: #000;
+        transform: translateY(-2px);
+    }
+
+.booking-page .location-suggestions {
+    background: #151515;
+    border: 1px solid #3a3a3a;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+
+.booking-page .location-suggestion {
+    color: #eee;
+    transition: background-color 0.15s ease;
+}
+
+    .booking-page .location-suggestion:hover,
+    .booking-page .location-suggestion.is-highlighted {
+        background-color: rgba(224, 198, 31, 0.15);
+    }
+
+.booking-page .suggestion-icon {
+    color: #E0C61F;
+}
+
+/* Calendar */
+.booking-page .calendar {
+    background: #141414;
+    border: 1px solid #2c2c2c;
+    border-radius: 14px;
+}
+
+.booking-page .calendar-header h2 {
+    color: #fff;
+}
+
+.booking-page .calendar-weekdays span {
+    color: #E0C61F;
+    font-weight: 600;
+}
+
+.booking-page .calendar-arrow {
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+    .booking-page .calendar-arrow:hover:not(:disabled) {
+        color: #E0C61F;
+        transform: scale(1.15);
+    }
+
+.booking-page .calendar-day {
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+    .booking-page .calendar-day:hover:not(:disabled) {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 2px rgba(224, 198, 31, 0.55);
+    }
+
+    .booking-page .calendar-day.today {
+        box-shadow: inset 0 0 0 2px #E0C61F;
+    }
+
+    .booking-page .calendar-day.selected-date {
+        box-shadow: 0 0 14px rgba(224, 198, 31, 0.6);
+        transform: scale(1.08);
+    }
+
+.booking-page .selected-date-text {
+    color: #E0C61F;
+    font-weight: 500;
+}
+
+/* Time windows as pills */
+.booking-page .time-chips li {
+    border: 1px solid #3a3a3a;
+    border-radius: 20px;
+    transition: border-color 0.2s ease;
+}
+
+.booking-page .time-chips:not(.busy-chips) li:hover {
+    border-color: #E0C61F;
+}
+
+/* Terms card */
+.booking-page .terms-card {
+    background: #151515;
+    border: 1px solid #2c2c2c;
+    border-left: 4px solid #E0C61F;
+    border-radius: 12px;
+}
+
+.booking-page .terms-check input {
+    accent-color: #E0C61F;
+}
+
+/* Buttons */
+.booking-page .submit-booking-button {
+    background: #FFB400;
+    color: #000;
+    border: 0;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+    .booking-page .submit-booking-button:hover:not(:disabled) {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 24px rgba(224, 198, 31, 0.4);
+        filter: brightness(1.05);
+    }
+
+    .booking-page .submit-booking-button:active:not(:disabled) {
+        transform: translateY(0) scale(0.97);
+    }
+
+.booking-page .cancel-booking-button {
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+    .booking-page .cancel-booking-button:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+    }
+
+@media (max-width: 600px) {
+    .booking-page .booking-form {
+        padding: 20px;
+    }
+}
+
+
+
+/* ---------- Booking cancelled page ---------- */
+.cancelled-page {
+    display: flex;
+    justify-content: center;
+    padding: 80px 20px 100px;
+}
+
+.cancelled-card {
+    width: 100%;
+    max-width: 420px;
+    background: #1f1f1f;
+    border: 1px solid #2e2e2e;
+    border-radius: 16px;
+    padding: 44px 40px;
+    text-align: center;
+    animation: cancelledPop 0.5s ease both;
+}
+
+@keyframes cancelledPop {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.cancelled-icon {
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 22px;
+    border-radius: 50%;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .cancelled-icon svg {
+        width: 38px;
+        height: 38px;
+        stroke: #2fa84f;
+        stroke-dasharray: 30;
+        stroke-dashoffset: 30;
+        animation: cancelledDraw 0.6s 0.3s ease forwards;
+    }
+
+@keyframes cancelledDraw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.cancelled-text {
+    font-size: 1.05rem;
+    color: #f2f2f2;
+    margin-bottom: 8px;
+}
+
+.cancelled-sub {
+    font-size: 0.85rem;
+    color: #9a9a9a;
+    margin-bottom: 22px;
+}
+
+.cancelled-link {
+    display: inline-block;
+    border: 1px solid #E0C61F;
+    border-radius: 8px;
+    padding: 9px 24px;
+    color: #E0C61F;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+    .cancelled-link:hover {
+        background-color: #E0C61F;
+        color: #000;
+        transform: translateY(-2px);
+    }
+
+/* The Cancel booking button is now a <button> inside a form */
+button.action-btn {
+    font: inherit;
+    cursor: pointer;
+}
+
+/* ---------- Cancel confirmation dialog ---------- */
+.confirm-dialog {
+    background: #1a1a1a;
+    color: #f2f2f2;
+    border: 1px solid #3a3a3a;
+    border-radius: 16px;
+    padding: 32px 36px;
+    max-width: 440px;
+    width: calc(100% - 40px);
+    text-align: center;
+    margin: auto;
+}
+
+    .confirm-dialog::backdrop {
+        background: rgba(0, 0, 0, 0.75);
+    }
+
+    .confirm-dialog[open] {
+        animation: confirmPop 0.25s ease both;
+    }
+
+@keyframes confirmPop {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.confirm-dialog h3 {
+    font-size: 1.15rem;
+    margin-bottom: 10px;
+}
+
+.confirm-dialog p {
+    font-size: 0.9rem;
+    color: #bdbdbd;
+    margin-bottom: 24px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+}
+
+.confirm-keep,
+.confirm-yes {
+    font: inherit;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.confirm-keep {
+    background: transparent;
+    border: 1px solid #E0C61F;
+    color: #E0C61F;
+}
+
+    .confirm-keep:hover {
+        background: #E0C61F;
+        color: #000;
+        transform: translateY(-2px);
+    }
+
+.confirm-yes {
+    background: transparent;
+    border: 1px solid #d9534f;
+    color: #ff6b6b;
+}
+
+    .confirm-yes:hover {
+        background: #d9534f;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+/* The Cancel booking button is a <button> now, so match the link-style buttons */
+button.action-btn {
+    font: inherit;
+    cursor: pointer;
+}

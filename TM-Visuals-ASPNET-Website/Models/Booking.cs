@@ -8,6 +8,7 @@ namespace TMVisualsWebApp.Models
     public class Booking
     {
         public int Id { get; set; }
+        public Guid? UserId { get; set; }
 
         [Required(ErrorMessage = "Please select a service.")]
         [Display(Name = "Service Type")]
@@ -58,6 +59,7 @@ namespace TMVisualsWebApp.Models
         [StringLength(300, ErrorMessage = "The location cannot exceed 300 characters.")]
         public string Location { get; set; } = string.Empty;
 
+        [CoordinatePair]
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
 
@@ -69,5 +71,8 @@ namespace TMVisualsWebApp.Models
 
         [Url]
         public string? DeliveryLink { get; set; }
+        public DateTime CreatedAtUtc { get; set; }
+        public DateTimeOffset ExpiresAtUtc { get; set; }
+
     }
 }

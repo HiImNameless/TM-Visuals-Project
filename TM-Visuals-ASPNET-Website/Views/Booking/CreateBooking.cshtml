@@ -4,6 +4,8 @@
     ViewData["Title"] = "Create Booking";
 }
 
+
+<!--Booking Form-->
 <div class="booking-page">
     <div class="booking-heading">
         <h1>Enter Full Details</h1>
@@ -48,6 +50,7 @@
                 <input asp-for="Email"
                        class="booking-input"
                        type="email"
+                       readonly
                        placeholder="name@example.com" />
 
                 <span asp-validation-for="Email"
@@ -147,6 +150,7 @@
                   class="field-validation-error"></span>
         </div>
 
+        <!--Booking Calendar-->
         <div class="field full-field">
             <label>Select a Date</label>
 

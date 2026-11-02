@@ -2,6 +2,7 @@
     var page = ViewContext.RouteData.Values["action"]?.ToString();
     var controller = ViewContext.RouteData.Values["controller"]?.ToString();
 }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -106,5 +107,10 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    @if (TempData["Success"] is string successMessage)
+    {
+        <div class="auth-status" role="status">@successMessage</div>
+    }
 </body>
 </html>

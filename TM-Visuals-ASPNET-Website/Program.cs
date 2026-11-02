@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Supabase.Extensions.DependencyInjection;
 using TMVisualsWebApp.Data;
@@ -10,20 +9,15 @@ using TMVisualsWebApp.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDbContext<TMVisualsDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("SupabaseConnection")));
-
-//builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    //.AddEntityFrameworkStores<ApplicationDbContext>();
-builder.Services.AddControllersWithViews();
 
 
 builder.Services.AddSupabase(
     builder.Configuration["Supabase:Url"]!,
     builder.Configuration["Supabase:Key"]!
 );
+
 // Registers Supabase.Client and each of its sub-clients (Auth, Postgrest,
 // Storage, Functions, Realtime) in the DI container, backed by pooled HttpClients from IHttpClientFactory.
 // Blazor registers the client the same way: use this in your Blazor Server /
@@ -46,8 +40,11 @@ builder.Services
 //added this cause i can't test the website 
 builder.Services.AddHttpClient<PortfolioCatalogService>(client =>
 {
-    client.BaseAddress = new Uri("https://YOUR-SUPABASE-URL/");   // adjust to your real endpoint
+    client.BaseAddress = new Uri("https://fswyeuiajsbdlkhhydnx.supabase.co");   // adjust to your real endpoint
 });
+builder.Services.AddHttpClient<ServicesCatalogService>();
+builder.Services.AddHttpClient("SupabaseInvoice");
+builder.Services.AddScoped<InvoiceCatalogService>();
 
 builder.Services.AddAuthorization();
 
@@ -63,6 +60,7 @@ builder.Services.AddHttpClient("photon", client =>
 //availability and booking store
 builder.Services.AddSingleton<BookingStore>();
 builder.Services.AddSingleton<BookingAvailabilityService>();
+builder.Services.AddSingleton<ProfileStore>();
 
 var app = builder.Build();
 
@@ -98,6 +96,7 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
@@ -107,9 +106,14 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-
-app.UseAuthentication();
-app.UseAuthorization();
-
+app.MapGet("/debug-config", (IConfiguration config, IWebHostEnvironment env) =>
+{
+    return Results.Json(new
+    {
+        Environment = env.EnvironmentName,
+        SupabaseUrlLoaded = !string.IsNullOrWhiteSpace(config["Supabase:Url"]),
+        SupabaseKeyLoaded = !string.IsNullOrWhiteSpace(config["Supabase:Key"])
+    });
+});
 
 app.Run();
