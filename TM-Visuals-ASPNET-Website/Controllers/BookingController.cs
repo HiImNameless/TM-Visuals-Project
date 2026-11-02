@@ -5,8 +5,6 @@ using System.Security.Claims;
 using System.Text.Json;
 using TMVisualsWebApp.Models;
 using TMVisualsWebApp.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace TMVisualsWebApp.Controllers
 {
@@ -79,6 +77,7 @@ namespace TMVisualsWebApp.Controllers
                 nameof(Booking.Longitude),
                 nameof(Booking.NumberOfPeople),
                 nameof(Booking.Budget),
+                nameof(Booking.Requirements),
                 nameof(Booking.AcceptTerms))]
             Booking booking)
         {
@@ -171,6 +170,7 @@ namespace TMVisualsWebApp.Controllers
                 $"Contact number: {booking.Phone}",
                 $"Location: {booking.Location}",
                 $"Number of people: {booking.NumberOfPeople}",
+                $"Requirements: {(string.IsNullOrWhiteSpace(booking.Requirements) ? "None" : booking.Requirements)}",
                 $"Start time: {booking.StartTime:hh\\:mm}",
                 $"Finish time: {booking.FinishTime:hh\\:mm}"
                 );
@@ -438,6 +438,8 @@ namespace TMVisualsWebApp.Controllers
             booking.Phone = booking.Phone?.Trim() ?? string.Empty;
             booking.Email = booking.Email?.Trim() ?? string.Empty;
             booking.Location = booking.Location?.Trim() ?? string.Empty;
+            booking.Requirements = string.IsNullOrWhiteSpace(booking.Requirements) ? null : booking.Requirements?.Trim();
+
         }
 
         // ValidateBooking checks the Booking object for additional validation rules that are not covered by data annotations.

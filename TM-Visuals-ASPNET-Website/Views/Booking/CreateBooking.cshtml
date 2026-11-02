@@ -267,7 +267,19 @@
             <span asp-validation-for="Budget"
                   class="field-validation-error"></span>
         </div>
+        
+        <div class="field full-field">
+            <label asp-for="Requirements"></label>
 
+            <textarea asp-for="Requirements"
+                      class="booking-input"
+                      rows="4"
+                      maxlength="1000"
+                      placeholder="Anything we should know? e.g. shot list, dress code, special requests"></textarea>
+
+            <span asp-validation-for="Requirements"
+                  class="field-validation-error"></span>
+        </div>
         <div class="terms-card">
             <h2>Before you submit</h2>
 

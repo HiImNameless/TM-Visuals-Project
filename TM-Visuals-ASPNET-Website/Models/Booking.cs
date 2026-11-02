@@ -55,6 +55,10 @@ namespace TMVisualsWebApp.Models
         [Range(typeof(decimal), "0.01", "99999999", ErrorMessage = "The budget must be greater than R0.")]
         public decimal? Budget { get; set; }
 
+        [Required(ErrorMessage = "Please provide any specific requirements.")]
+        [StringLength(1000, ErrorMessage = "The requirements cannot exceed 1000 characters.")]
+        public string? Requirements { get; set; }
+
         [Required(ErrorMessage = "Please enter or select a location.")]
         [StringLength(300, ErrorMessage = "The location cannot exceed 300 characters.")]
         public string Location { get; set; } = string.Empty;
