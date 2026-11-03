@@ -132,8 +132,9 @@ namespace TMVisualsWebApp.Controllers
                 "Registration submitted. Check your email if confirmation is required.";
 
             return RedirectToAction(nameof(Login));
-        }
+        }//End of Register method
 
+        //Google Login and Callback methods
         [HttpGet]
         public IActionResult GoogleLogin()
         {
@@ -187,12 +188,13 @@ namespace TMVisualsWebApp.Controllers
             return Redirect(authorizeUrl);
         }
 
+        //Google Callback  response from Google after user authentication
         [HttpGet]
         public async Task<IActionResult> GoogleCallback(
             string? code,
             string? state,
             string? error,
-            CancellationToken cancellationToken, string? error_description)//added error_description
+            CancellationToken cancellationToken, string? error_description)
         {
             var verifier = Request.Cookies[GoogleVerifierCookie];
             var expectedState = Request.Cookies[GoogleStateCookie];
@@ -265,7 +267,7 @@ namespace TMVisualsWebApp.Controllers
                 rememberMe: false);
             TempData["Success"] = "You're now signed in.";
             return RedirectToAction("Index", "Home");
-        }
+        }//End of GoogleCallback method
 
         [HttpGet]
         public IActionResult ForgotPassword()
