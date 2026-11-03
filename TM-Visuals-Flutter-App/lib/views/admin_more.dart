@@ -17,7 +17,7 @@ class AdminMoreScreen extends StatelessWidget {
         children: [
           for (final item in const [
             ('/add-invoice', 'Upload invoice', Icons.upload_file),
-            ('/invoices', 'Invoices', Icons.receipt_long),
+            //('/invoices', 'Invoices', Icons.receipt_long),
             ('/portfolio-content', 'Upload Portfolio', Icons.photo_library_outlined),
             ('/portfolio-gallery', 'Portfolio gallery', Icons.collections_outlined),
             ('/clients', 'Clients', Icons.people_outline),

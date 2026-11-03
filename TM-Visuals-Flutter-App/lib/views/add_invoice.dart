@@ -1,5 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/add_invoice_service.dart';
@@ -91,7 +92,7 @@ class _AddInvoiceBody extends StatelessWidget {
     return PopScope(
       canPop: !vm.isLoading,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Add invoice')),
+        appBar: const AdminPageAppBar(title: 'Add invoice'),
         body: AdminContent(
           child: ListView(
             padding: const EdgeInsets.all(20),

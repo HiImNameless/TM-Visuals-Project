@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:photography_flutter_application/models/service_list_model.dart';
 import 'package:photography_flutter_application/viewmodels/service_list_viewmodel.dart';
 import 'package:photography_flutter_application/views/edit_service.dart';
@@ -104,12 +105,8 @@ class _ServiceDetailsViewState extends State<ServiceDetailsView> {
     final isBusy = _isUpdatingStatus || _isDeleting;
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
-          'Service Details',
-          style: TextStyle(color: Colors.white),
-        ),
+      appBar: AdminPageAppBar(
+        title: 'Service Details',
         actions: [
           IconButton(
             tooltip: 'Delete service',

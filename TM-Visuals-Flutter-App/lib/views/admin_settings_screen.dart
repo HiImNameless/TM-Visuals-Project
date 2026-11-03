@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/admin_settings_viewmodel.dart';
 
@@ -11,31 +12,10 @@ class AdminSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        iconTheme: IconThemeData(color: Colors.white),
-        centerTitle: true,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('TM ', style: TextStyle(color: Colors.white, fontSize: 20)),
-            Text('Visuals',
-                style: TextStyle(color: Colors.amber, fontSize: 20)),
-            SizedBox(width: 8),
-            
-          ],
-        ),
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1, color: Colors.amber),
-        ),
-      ),
+      appBar: const AdminPageAppBar(title: 'Settings'),
       body: ListView(
         padding: EdgeInsets.all(16),
         children: [
-          Text('Settings',
-              style: TextStyle(color: Colors.white, fontSize: 22)),
-          SizedBox(height: 16),
           Container(
             height: 300,
             padding: EdgeInsets.all(12),

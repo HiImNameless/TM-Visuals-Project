@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:photography_flutter_application/models/service_list_model.dart';
 import 'package:photography_flutter_application/viewmodels/service_list_viewmodel.dart';
 import 'package:photography_flutter_application/views/add_service.dart';
@@ -34,10 +35,7 @@ class _ServiceListState extends State<ServiceList> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Services', style: TextStyle(color: Colors.orange)),
-      ),
+      appBar: const AdminPageAppBar(title: 'Services'),
       body: Column(
         children: [
           Padding(

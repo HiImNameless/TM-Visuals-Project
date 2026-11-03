@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
@@ -18,7 +19,7 @@ class BookingDetailScreen extends StatelessWidget {
 
     if (b == null) {
       return Scaffold(
-        appBar: AppBar(),
+        appBar: const AdminPageAppBar(title: 'Booking'),
         body: const Center(child: Text('This booking is no longer available.')),
       );
     }
@@ -27,7 +28,7 @@ class BookingDetailScreen extends StatelessWidget {
     final busy = vm.isBusy(b.id);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Booking')),
+      appBar: const AdminPageAppBar(title: 'Booking'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         children: [
