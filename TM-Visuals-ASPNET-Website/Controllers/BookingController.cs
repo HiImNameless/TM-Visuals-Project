@@ -209,7 +209,7 @@ namespace TMVisualsWebApp.Controllers
 
             //Strips out all non-digit characters from the WhatsApp number, so that it can be used in a wa.me link.
             var number = new string(
-                (_configuration["WhatsApp:Number"] ?? string.Empty)
+                (_configuration["WhatsApp:BusinessNumber"] ?? string.Empty)
                     .Where(char.IsDigit)
                     .ToArray());
 
@@ -218,7 +218,7 @@ namespace TMVisualsWebApp.Controllers
             if (number.Length == 0)
             {
                 _logger.LogWarning(
-                    "WhatsApp:Number is not configured; WhatsApp link not generated.");
+                    "WhatsApp:BusinessNumber is not configured; WhatsApp link not generated.");
             }
             else
             {
@@ -230,6 +230,8 @@ namespace TMVisualsWebApp.Controllers
             {        
                     BookingId = booking.Id,
                     Name = booking.Name,
+                    Email = booking.Email,
+                    Phone = booking.Phone,
                     Service = booking.Service,
                     EventType = booking.EventType,
                     Date = booking.Date,
