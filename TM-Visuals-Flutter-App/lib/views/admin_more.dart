@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/admin_auth_viewmodel.dart';
 import '../widgets/admin_bottom_nav.dart';
+import '../widgets/admin_top_nav.dart';
 import '../widgets/admin_widgets.dart';
 
 class AdminMoreScreen extends StatelessWidget {
   const AdminMoreScreen({super.key});
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('More')),
+    appBar: const AdminTopNav(),
     bottomNavigationBar: const AdminBottomNav(currentIndex: 4),
     body: AdminContent(
       child: ListView(

@@ -4,6 +4,7 @@ import '../models/calendar_model.dart';
 import '../services/calendar_service.dart';
 import '../viewmodels/calendar_viewmodel.dart';
 import '../widgets/admin_bottom_nav.dart';
+import '../widgets/admin_top_nav.dart';
 import '../widgets/admin_widgets.dart';
 import 'date_manager.dart';
 
@@ -41,7 +42,7 @@ class _CalendarBody extends StatelessWidget {
     final days = DateTime(first.year, first.month + 1, 0).day;
     final cells = ((offset + days + 6) ~/ 7) * 7;
     return Scaffold(
-      appBar: AppBar(title: const Text('TM Visuals')),
+      appBar: const AdminTopNav(),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 2),
       body: AdminContent(
         child: RefreshIndicator(
