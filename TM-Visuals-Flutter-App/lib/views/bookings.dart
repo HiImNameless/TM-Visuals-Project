@@ -39,7 +39,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
         backgroundColor: Colors.black,
         title: const Text("TM Visuals", style: TextStyle(color: Colors.orange)),
       ),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 0),
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 1),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

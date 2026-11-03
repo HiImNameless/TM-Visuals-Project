@@ -1,22 +1,18 @@
-
 import 'package:flutter/material.dart';
 import 'admin_widgets.dart';
 
 /// Shared navigation for all TM Visuals admin screens.
 class AdminBottomNav extends StatelessWidget {
-  const AdminBottomNav({
-    super.key,
-    required this.currentIndex,
-  });
+  const AdminBottomNav({super.key, required this.currentIndex});
 
   final int currentIndex;
 
   static const routes = [
-    '/',
-    '/portfolio-content',
-    '/calendar',
-    '/admin-profile',
-    '/more',
+    '/',             // 0 Home
+    '/bookings',     // 1 Bookings
+    '/calendar',     // 2 Calendar
+    '/admin-profile',// 3 Profile
+    '/more',         // 4 More
   ];
 
   @override
@@ -30,9 +26,9 @@ class AdminBottomNav extends StatelessWidget {
       showSelectedLabels: false,
       showUnselectedLabels: false,
       onTap: (index) {
-        if (index == currentIndex) return;
-
-        Navigator.of(context).pushReplacementNamed(routes[index]);
+        final target = routes[index];
+        if (ModalRoute.of(context)?.settings.name == target) return;
+        Navigator.of(context).pushReplacementNamed(target);
       },
       items: const [
         BottomNavigationBarItem(
@@ -40,8 +36,8 @@ class AdminBottomNav extends StatelessWidget {
           label: 'Home',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.menu_book_outlined, size: 26),
-          label: 'Content',
+          icon: Icon(Icons.event_note_outlined, size: 26),
+          label: 'Bookings',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.calendar_today_outlined, size: 26),
