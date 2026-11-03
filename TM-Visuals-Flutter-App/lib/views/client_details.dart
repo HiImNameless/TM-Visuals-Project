@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:photography_flutter_application/models/clients_model.dart';
 import 'package:photography_flutter_application/models/content_model.dart';
 import 'package:photography_flutter_application/viewmodels/content_viewmodel.dart';
@@ -54,13 +55,7 @@ class _ClientDetailsContent extends StatelessWidget {
     final contentViewModel = context.watch<ContentViewModel>();
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
-          'Client Details',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
+      appBar: const AdminPageAppBar(title: 'Client Details'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

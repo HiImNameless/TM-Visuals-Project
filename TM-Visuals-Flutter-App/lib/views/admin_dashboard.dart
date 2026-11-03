@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/admin_bottom_nav.dart';
+import '../widgets/admin_top_nav.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:photography_flutter_application/views/admin_sign_in.dart';
 
@@ -14,36 +15,7 @@ class AdminDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-  backgroundColor: backgroundColor,
-  iconTheme: const IconThemeData(color: Colors.white),
-  title: const Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Text(
-        'TM ',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 21,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      Text(
-        'Visuals',
-        style: TextStyle(
-          color: accentColor,
-          fontSize: 21,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    ],
-  ),
-  centerTitle: true,
-  bottom: const PreferredSize(
-    preferredSize: Size.fromHeight(1),
-    child: Divider(height: 1, color: accentColor),
-  ),
-),
+      appBar: const AdminTopNav(),
       // Admin options menu
       drawer: Drawer(
   backgroundColor: cardColor,

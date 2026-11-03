@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:photography_flutter_application/models/content_model.dart';
 import 'package:photography_flutter_application/viewmodels/content_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -62,10 +63,7 @@ class _AddContentViewState extends State<AddContentView> {
     final contentViewModel = context.watch<ContentViewModel>();
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Add Client Content'),
-      ),
+      appBar: const AdminPageAppBar(title: 'Add Client Content'),
       body: Form(
         key: _formKey,
         child: ListView(

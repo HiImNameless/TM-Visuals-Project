@@ -320,12 +320,12 @@ class AdminProfileScreen extends StatelessWidget {
 import 'package:flutter/material.dart';
 import 'package:photography_flutter_application/views/admin_settings_screen.dart';
 import 'package:photography_flutter_application/views/admin_sign_in.dart';
-import 'package:photography_flutter_application/views/bookings.dart';
 import 'package:photography_flutter_application/views/service_list_view.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../viewmodels/admin_profile_viewmodel.dart';
 import '../widgets/admin_bottom_nav.dart';
+import '../widgets/admin_top_nav.dart';
 
 class AdminProfileScreen extends StatefulWidget {
   const AdminProfileScreen({super.key});
@@ -362,78 +362,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        title: const Text(
-          'Profile',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.notifications_none,
-                  color: Colors.white,
-                  size: 24,
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const BookingsScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              if (totalBookings > 0)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Colors.amber,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      '$totalBookings',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.tune, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AdminSettingsScreen(),
-                ),
-              );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      appBar: const AdminTopNav(),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 3),  
       body: vm.isLoading
         ? const Center(child: CircularProgressIndicator())

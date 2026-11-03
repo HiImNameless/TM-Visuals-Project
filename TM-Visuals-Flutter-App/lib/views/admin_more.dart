@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/admin_auth_viewmodel.dart';
 import '../widgets/admin_bottom_nav.dart';
+import '../widgets/admin_top_nav.dart';
 import '../widgets/admin_widgets.dart';
 
 class AdminMoreScreen extends StatelessWidget {
   const AdminMoreScreen({super.key});
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('More')),
+    appBar: const AdminTopNav(),
     bottomNavigationBar: const AdminBottomNav(currentIndex: 4),
     body: AdminContent(
       child: ListView(
@@ -16,7 +17,7 @@ class AdminMoreScreen extends StatelessWidget {
         children: [
           for (final item in const [
             ('/add-invoice', 'Upload invoice', Icons.upload_file),
-            ('/invoices', 'Invoices', Icons.receipt_long),
+            //('/invoices', 'Invoices', Icons.receipt_long),
             ('/portfolio-content', 'Upload Portfolio', Icons.photo_library_outlined),
             ('/portfolio-gallery', 'Portfolio gallery', Icons.collections_outlined),
             ('/clients', 'Clients', Icons.people_outline),

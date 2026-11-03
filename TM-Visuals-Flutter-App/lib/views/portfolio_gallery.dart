@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:provider/provider.dart';
 import '../models/portfolio_model.dart';
 import '../viewmodels/portfolio_gallery_viewmodel.dart';
@@ -222,13 +223,7 @@ class _PortfolioGalleryContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
-          'Portfolio gallery',
-          style: TextStyle(color: Colors.orange),
-        ),
-      ),
+      appBar: const AdminPageAppBar(title: 'Portfolio gallery'),
       body: Column(
         children: [
           if (vm.isBusy)

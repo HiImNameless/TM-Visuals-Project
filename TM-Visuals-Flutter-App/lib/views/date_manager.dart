@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:provider/provider.dart';
 import '../services/calendar_service.dart';
 import '../viewmodels/date_availability_viewmodel.dart';
@@ -27,7 +28,7 @@ class _DateManagerBody extends StatelessWidget {
     return PopScope(
       canPop: !vm.saving,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Manage availability')),
+        appBar: const AdminPageAppBar(title: 'Manage availability'),
         body: AdminContent(
           child: ListView(
             padding: const EdgeInsets.all(20),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:provider/provider.dart';
 import '../viewmodels/client_list_viewmodel.dart';
 import 'client_details.dart';
@@ -25,10 +26,7 @@ class _ClientsContent extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('TM Visuals', style: TextStyle(color: Colors.orange)),
-      ),
+      appBar: const AdminPageAppBar(title: 'Clients'),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(

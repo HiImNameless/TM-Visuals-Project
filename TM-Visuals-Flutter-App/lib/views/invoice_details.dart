@@ -162,6 +162,7 @@ class InvoiceDetailsScreen extends StatelessWidget {
 */
 
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:photography_flutter_application/models/booking_list_model.dart';
 import 'package:photography_flutter_application/views/bookings.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
@@ -229,33 +230,11 @@ class InvoiceDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: const AdminPageAppBar(title: 'Invoice Details'),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Back arrow + amber line
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-              child: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-            ),
-            const Divider(color: _amber, height: 1, indent: 4, endIndent: 4),
-
-            // Title
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 24, 24, 16),
-              child: Text(
-                'Invoice Details',
-                style: TextStyle(color: Colors.white, fontSize: 22),
-              ),
-            ),
-
             // Card
             Expanded(
               child: Container(

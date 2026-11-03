@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:photography_flutter_application/services/Formatters.dart';
 import '../widgets/bookingStatusChip.dart';
 import '../widgets/admin_bottom_nav.dart';
+import '../widgets/admin_top_nav.dart';
 
 //Kamohelo P testing bookings screen
 
@@ -35,10 +36,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text("TM Visuals", style: TextStyle(color: Colors.orange)),
-      ),
+      appBar: const AdminTopNav(),
       bottomNavigationBar: const AdminBottomNav(currentIndex: 1),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,

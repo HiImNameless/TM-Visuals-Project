@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:photography_flutter_application/models/service_list_model.dart';
 import 'package:photography_flutter_application/viewmodels/service_list_viewmodel.dart';
 import 'package:provider/provider.dart';
@@ -61,13 +62,7 @@ class _EditServiceViewState extends State<EditServiceView> {
     final isSaving = context.watch<ServiceViewModel>().isSaving;
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
-          'Edit Service',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
+      appBar: const AdminPageAppBar(title: 'Edit Service'),
       body: Form(
         key: _formKey,
         child: ListView(

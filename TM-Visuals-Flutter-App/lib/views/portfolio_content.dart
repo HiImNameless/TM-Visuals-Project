@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/admin_page_app_bar.dart';
 import 'package:provider/provider.dart';
 import '/models/portfolio_model.dart';
 import '/viewmodels/portfolio_view_model.dart';
@@ -190,20 +191,7 @@ class _PortfolioContentViewState extends State<_PortfolioContentView> {
       canPop: !vm.isUploading,
       child: Scaffold(
         backgroundColor: _background,
-        appBar: AppBar(
-          backgroundColor: _background,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-          title: const Text(
-            'TM Visuals',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(1),
-            child: Container(color: _yellow, height: 1),
-          ),
-        ),
+        appBar: const AdminPageAppBar(title: 'Upload portfolio'),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
