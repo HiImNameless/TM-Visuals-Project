@@ -774,39 +774,18 @@ body {
 
 .auth-card {
     position: relative;
-    isolation: isolate;
-    overflow: hidden;
     box-sizing: border-box;
-    width: min(100%, 430px);
-    min-height: 540px;
-    padding: 20px 34px 30px;
+    width: min(100%, 600px);
+    padding: 30px 40px;
     background: #050505;
     color: #fff;
-    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 180, 0, 0.6);
+    border-radius: 20px;
+    box-shadow: 0 0 15px rgba(255, 180, 0, 0.15), 0 20px 55px rgba(0, 0, 0, 0.45);
 }
 
-.auth-card::before,
-.auth-card::after {
-    position: absolute;
-    z-index: -1;
-    width: 142px;
-    height: 142px;
-    border-radius: 50%;
-    background: #ffb400;
-    content: "";
-}
 
-.auth-card::before {
-    top: -62px;
-    left: -94px;
-    box-shadow: 49px -20px 0 -2px #ad7900;
-}
 
-.auth-card::after {
-    right: -94px;
-    bottom: -62px;
-    box-shadow: -49px 20px 0 -2px #ad7900;
-}
 
 .auth-title,
 .auth-card form,
@@ -846,7 +825,7 @@ body {
 .auth-input {
     box-sizing: border-box;
     width: 100%;
-    min-height: 44px;
+    min-height: 50px;
     padding: 10px 13px;
     border: 1px solid #ddd;
     border-radius: 9px;
@@ -967,15 +946,15 @@ body {
 
 .auth-switch {
     margin: 11px 0 0;
-    color: #ffb400;
+    color: #d3d3d3;
     font-size: 0.78rem;
     text-align: center;
 }
 
-.auth-switch a {
-    color: #fff;
-    text-decoration: none;
-}
+    .auth-switch a {
+        color: #ffb400;
+        text-decoration: none;
+    }
 
 .auth-switch a:hover {
     text-decoration: underline;
