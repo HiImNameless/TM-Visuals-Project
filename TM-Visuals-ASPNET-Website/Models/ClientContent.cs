@@ -17,7 +17,7 @@ namespace TMVisualsWebApp.Models
             Booking = booking;
         }
         public Booking Booking { get; }
-        public int BookingId => Booking.Id;
+        public Guid BookingId => Booking.Id;
         public string EventType => Booking.EventType;
         public string Location => Booking.Location;
         public DateTime BookingDate => Booking.Date ?? default;

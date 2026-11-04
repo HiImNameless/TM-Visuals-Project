@@ -19,7 +19,8 @@ namespace TMVisualsWebApp.Services
 
         public async Task<IReadOnlyList<InvoiceDownload>> FetchForClientAsync(
             string email,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            string? accessToken = null)
         {
             if (string.IsNullOrWhiteSpace(email))
             {
@@ -35,7 +36,7 @@ namespace TMVisualsWebApp.Services
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
                 $"{url}/rest/v1/invoice?select=invoice_id,reference,file_path,created_at,booking:booking_id(booking_id,client:client_id(user:user_id(email)))");
-            AddSupabaseHeaders(request, key);
+            AddSupabaseHeaders(request, key, accessToken);
 
             using var response = await client.SendAsync(request, cancellationToken);
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -80,7 +81,8 @@ namespace TMVisualsWebApp.Services
         public async Task<string> CreateSignedDownloadUrlAsync(
             string filePath,
             string fileName,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            string? accessToken = null)
         {
             if (!TryGetSettings(out var url, out var key))
             {
@@ -94,7 +96,7 @@ namespace TMVisualsWebApp.Services
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
                 $"{url}/storage/v1/object/sign/{encodedPath}");
-            AddSupabaseHeaders(request, key);
+            AddSupabaseHeaders(request, key, accessToken);
             request.Content = new StringContent(
                 JsonSerializer.Serialize(new { expiresIn = 300 }),
                 Encoding.UTF8,
@@ -131,10 +133,17 @@ namespace TMVisualsWebApp.Services
             return $"{downloadUrl}{separator}download={Uri.EscapeDataString(downloadName)}";
         }
 
-        private static void AddSupabaseHeaders(HttpRequestMessage request, string key)
+        // With the signed-in user's token, row-level security returns only that
+        // user's invoices. Without it the request runs as the anonymous role.
+        private static void AddSupabaseHeaders(
+            HttpRequestMessage request,
+            string key,
+            string? accessToken = null)
         {
             request.Headers.Add("apikey", key);
-            request.Headers.Add("Authorization", $"Bearer {key}");
+            request.Headers.Add(
+                "Authorization",
+                $"Bearer {(string.IsNullOrWhiteSpace(accessToken) ? key : accessToken)}");
         }
 
         private bool TryGetSettings(out string url, out string key)
@@ -190,3 +199,4 @@ namespace TMVisualsWebApp.Services
         }
     }
 }
+

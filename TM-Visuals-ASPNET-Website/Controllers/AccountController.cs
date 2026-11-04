@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using System.Globalization;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -89,9 +90,9 @@ namespace TMVisualsWebApp.Controllers
                 });
 
             using var response = await client.SendAsync(request);
-           
+
             var responseBody = await response.Content.ReadAsStringAsync();
-        
+
 
             if (!response.IsSuccessStatusCode)
             {
@@ -132,9 +133,8 @@ namespace TMVisualsWebApp.Controllers
                 "Registration submitted. Check your email if confirmation is required.";
 
             return RedirectToAction(nameof(Login));
-        }//End of Register method
+        }
 
-        //Google Login and Callback methods
         [HttpGet]
         public IActionResult GoogleLogin()
         {
@@ -188,13 +188,12 @@ namespace TMVisualsWebApp.Controllers
             return Redirect(authorizeUrl);
         }
 
-        //Google Callback  response from Google after user authentication
         [HttpGet]
         public async Task<IActionResult> GoogleCallback(
             string? code,
             string? state,
             string? error,
-            CancellationToken cancellationToken, string? error_description)
+            CancellationToken cancellationToken, string? error_description)//added error_description
         {
             var verifier = Request.Cookies[GoogleVerifierCookie];
             var expectedState = Request.Cookies[GoogleStateCookie];
@@ -233,19 +232,19 @@ namespace TMVisualsWebApp.Controllers
                 key,
                 new { auth_code = code, code_verifier = verifier });
 
-             using var response = await client.SendAsync(
-                 request,
-                 cancellationToken);
-             if (!response.IsSuccessStatusCode)
-             {
+            using var response = await client.SendAsync(
+                request,
+                cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
                 var body = await response.Content.ReadAsStringAsync(cancellationToken);
                 var (errCode, errMessage) = ReadSupabaseError(body);
                 _logger.LogWarning(
                     "Google code exchange failed: HTTP {Status}, code {Code}, message {Message}",
                     (int)response.StatusCode, errCode, errMessage);
 
-                  TempData["AuthMessage"] =
-                  "Registration submitted. Check your email to confirm your account, then sign in.";
+                TempData["AuthMessage"] =
+                    "Google sign-in could not be completed. Please try again.";
                 return RedirectToAction(nameof(Login));
             }
 
@@ -264,10 +263,11 @@ namespace TMVisualsWebApp.Controllers
             await SignInUserAsync(
                 userId,
                 result.User.Email,
-                rememberMe: false);
+                rememberMe: false,
+                session: result);
             TempData["Success"] = "You're now signed in.";
             return RedirectToAction("Index", "Home");
-        }//End of GoogleCallback method
+        }
 
         [HttpGet]
         public IActionResult ForgotPassword()
@@ -448,7 +448,8 @@ namespace TMVisualsWebApp.Controllers
                 await SignInUserAsync(
                     userId,
                     result.User.Email ?? model.Email,
-                    model.RememberMe);
+                    model.RememberMe,
+                    result);
 
                 TempData["Success"] = "Welcome back! You're now signed in.";
                 return RedirectToAction("Index", "Home");
@@ -470,7 +471,8 @@ namespace TMVisualsWebApp.Controllers
         private async Task SignInUserAsync(
             string userId,
             string email,
-            bool rememberMe)
+            bool rememberMe,
+            SupabaseLoginResponse? session = null)
         {
             var claims = new List<Claim>
             {
@@ -483,15 +485,44 @@ namespace TMVisualsWebApp.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
+            var properties = new AuthenticationProperties
+            {
+                IsPersistent = rememberMe,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(
+                    rememberMe ? 24 : 2)
+            };
+
+            // Keep the user's Supabase token so the database can act as this
+            // user (bookings, profile). SupabaseSessionService refreshes it.
+            if (!string.IsNullOrWhiteSpace(session?.AccessToken))
+            {
+                var expiresIn = session.ExpiresIn > 0 ? session.ExpiresIn : 3600;
+                properties.StoreTokens(new[]
+                {
+                    new AuthenticationToken
+                    {
+                        Name = "access_token",
+                        Value = session.AccessToken
+                    },
+                    new AuthenticationToken
+                    {
+                        Name = "refresh_token",
+                        Value = session.RefreshToken ?? string.Empty
+                    },
+                    new AuthenticationToken
+                    {
+                        Name = "expires_at",
+                        Value = DateTimeOffset.UtcNow
+                            .AddSeconds(expiresIn)
+                            .ToString("o", CultureInfo.InvariantCulture)
+                    }
+                });
+            }
+
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal,
-                new AuthenticationProperties
-                {
-                    IsPersistent = rememberMe,
-                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(
-                        rememberMe ? 24 : 2)
-                });
+                properties);
         }
 
 
@@ -561,6 +592,15 @@ namespace TMVisualsWebApp.Controllers
         {
             [JsonPropertyName("user")]
             public SupabaseUser? User { get; set; }
+
+            [JsonPropertyName("access_token")]
+            public string? AccessToken { get; set; }
+
+            [JsonPropertyName("refresh_token")]
+            public string? RefreshToken { get; set; }
+
+            [JsonPropertyName("expires_in")]
+            public int ExpiresIn { get; set; }
         }
 
 
