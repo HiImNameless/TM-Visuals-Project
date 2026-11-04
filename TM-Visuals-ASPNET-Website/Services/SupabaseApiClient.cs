@@ -10,11 +10,12 @@ namespace TMVisualsWebApp.Services;
 
 public sealed class SupabaseSignInRequiredException : Exception;
 
-public sealed class SupabaseApiException(HttpStatusCode statusCode, string? code)
+public sealed class SupabaseApiException(HttpStatusCode statusCode, string? code, string? databaseMessage = null)
     : Exception($"Supabase request failed (HTTP {(int)statusCode}).")
 {
     public HttpStatusCode StatusCode { get; } = statusCode;
     public string? Code { get; } = code;
+    public string? DatabaseMessage { get; } = databaseMessage;
 }
 
 /// Uses public credentials and the caller's session. Tokens stay inside the
@@ -43,9 +44,21 @@ public sealed class SupabaseApiClient(
         if (!response.IsSuccessStatusCode)
         {
             string? code = null;
-            try { using var error = JsonDocument.Parse(json); code = error.RootElement.GetProperty("code").GetString(); }
-            catch (Exception e) when (e is JsonException or KeyNotFoundException) { }
-            throw new SupabaseApiException(response.StatusCode, code);
+            string? databaseMessage = null;
+            try
+            {
+                using var error = JsonDocument.Parse(json);
+                var root = error.RootElement;
+                if (root.ValueKind == JsonValueKind.Object)
+                {
+                    if (root.TryGetProperty("code", out var errorCode) && errorCode.ValueKind == JsonValueKind.String)
+                        code = errorCode.GetString();
+                    if (root.TryGetProperty("message", out var errorMessage) && errorMessage.ValueKind == JsonValueKind.String)
+                        databaseMessage = errorMessage.GetString();
+                }
+            }
+            catch (JsonException) { }
+            throw new SupabaseApiException(response.StatusCode, code, databaseMessage);
         }
         using var document = JsonDocument.Parse(string.IsNullOrWhiteSpace(json) ? "null" : json);
         return document.RootElement.Clone();
@@ -61,7 +74,7 @@ public sealed class SupabaseApiClient(
         return (url!, key);
     }
 
-    private async Task<string> AccessTokenAsync(CancellationToken cancellationToken)
+    public async Task<string> AccessTokenAsync(CancellationToken cancellationToken)
     {
         var context = contexts.HttpContext ?? throw new SupabaseSignInRequiredException();
         var auth = await context.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);

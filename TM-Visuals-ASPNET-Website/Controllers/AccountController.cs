@@ -116,6 +116,9 @@ namespace TMVisualsWebApp.Controllers
 
                 var userMessage = errorCode switch
                 {
+                    "unexpected_failure" when string.Equals(message,
+                        "Error sending confirmation email", StringComparison.OrdinalIgnoreCase) =>
+                        "We couldn't send your confirmation email. Please try again later or contact us for help.",
                     "over_email_send_rate_limit" =>
                         "We're receiving a lot of sign-ups right now. Please try again in a little while.",
                     "weak_password" =>

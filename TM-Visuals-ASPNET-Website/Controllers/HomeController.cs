@@ -21,7 +21,8 @@ namespace TMVisualsWebApp.Controllers
 
 
 
-        private readonly ProfileStore _profiles;
+        private readonly SupabaseDataService _data;
+        private readonly SupabaseApiClient _api;
 
         public HomeController(
             ILogger<HomeController> logger,
@@ -29,14 +30,16 @@ namespace TMVisualsWebApp.Controllers
             ServicesCatalogService servicesCatalog,
             SupabaseBookingService bookings,
             InvoiceCatalogService invoiceCatalog,
-            ProfileStore profiles)
+            SupabaseDataService data,
+            SupabaseApiClient api)
         {
             _logger = logger;
             _portfolioCatalog = portfolioCatalog;
             _servicesCatalog = servicesCatalog;
             _bookings = bookings;
             _invoiceCatalog = invoiceCatalog;
-            _profiles = profiles;
+            _data = data;
+            _api = api;
         }
 
         public IActionResult Index()
@@ -103,6 +106,9 @@ namespace TMVisualsWebApp.Controllers
         public async Task<IActionResult> Profile(CancellationToken cancellationToken)
         {
             var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+                return Forbid();
+            var accessToken = await _api.AccessTokenAsync(cancellationToken);
 
             var myBookings = (await _bookings.FetchMineAsync(cancellationToken: cancellationToken))
                 .OrderByDescending(b => b.Date)
@@ -112,7 +118,7 @@ namespace TMVisualsWebApp.Controllers
             IReadOnlyList<InvoiceDownload> invoices;
             try
             {
-                invoices = await _invoiceCatalog.FetchForClientAsync(email, cancellationToken);
+                invoices = await _invoiceCatalog.FetchForClientAsync(email, cancellationToken, accessToken);
             }
             catch (Exception error) when (
                 error is HttpRequestException ||
@@ -124,13 +130,13 @@ namespace TMVisualsWebApp.Controllers
                 TempData["InvoiceError"] = "Invoices are temporarily unavailable.";
             }
 
-            var saved = _profiles.Get(email);
+            var saved = await _data.GetMyProfileAsync(accessToken, userId, cancellationToken);
 
             var user = new UserProfile
             {
-                FullName = saved.Name ?? first?.Name ?? email.Split('@')[0],
+                FullName = saved?.FullName ?? first?.Name ?? email.Split('@')[0],
                 Email = email,
-                PhoneNumber = saved.Phone ?? first?.Phone,
+                PhoneNumber = saved?.Phone ?? first?.Phone,
                 Bookings = myBookings,
                 Invoices = invoices.ToList()
             };
@@ -144,7 +150,8 @@ namespace TMVisualsWebApp.Controllers
             CancellationToken cancellationToken)
         {
             var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
-            var invoice = (await _invoiceCatalog.FetchForClientAsync(email, cancellationToken))
+            var accessToken = await _api.AccessTokenAsync(cancellationToken);
+            var invoice = (await _invoiceCatalog.FetchForClientAsync(email, cancellationToken, accessToken))
                 .FirstOrDefault(item => string.Equals(item.Id, id, StringComparison.Ordinal));
 
             if (invoice == null)
@@ -155,7 +162,8 @@ namespace TMVisualsWebApp.Controllers
             var downloadUrl = await _invoiceCatalog.CreateSignedDownloadUrlAsync(
                 invoice.FilePath,
                 invoice.Reference,
-                cancellationToken);
+                cancellationToken,
+                accessToken);
             return Redirect(downloadUrl);
         }
 
@@ -220,18 +228,21 @@ namespace TMVisualsWebApp.Controllers
         public async Task<IActionResult> EditDetails(CancellationToken cancellationToken)
         {
             var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
+            if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+                return Forbid();
+            var accessToken = await _api.AccessTokenAsync(cancellationToken);
 
             var latest = (await _bookings.FetchMineAsync(cancellationToken: cancellationToken))
                 .OrderByDescending(b => b.Date)
                 .FirstOrDefault();
 
-            var saved = _profiles.Get(email);
+            var saved = await _data.GetMyProfileAsync(accessToken, userId, cancellationToken);
 
             var profile = new UserProfile
             {
-                FullName = saved.Name ?? latest?.Name ?? email.Split('@')[0],
+                FullName = saved?.FullName ?? latest?.Name ?? email.Split('@')[0],
                 Email = email,
-                PhoneNumber = saved.Phone ?? latest?.Phone
+                PhoneNumber = saved?.Phone ?? latest?.Phone
             };
 
             return View(profile);
@@ -239,21 +250,27 @@ namespace TMVisualsWebApp.Controllers
 
         [Authorize]
         [HttpPost]
-        public IActionResult EditDetails(UserProfile model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditDetails(UserProfile model, CancellationToken cancellationToken)
         {
             ModelState.Remove("Bookings");
+            ModelState.Remove("Invoices");
 
             // The email is the login, so always use the one from the cookie
             var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
             model.Email = email;
             ModelState.Remove("Email");
 
+            if (string.IsNullOrWhiteSpace(model.FullName))
+                ModelState.AddModelError(nameof(model.FullName), "Please enter your name.");
+
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            _profiles.Save(email, model.FullName?.Trim(), model.PhoneNumber?.Trim());
+            var accessToken = await _api.AccessTokenAsync(cancellationToken);
+            await _data.UpdateMyProfileAsync(accessToken, model.FullName.Trim(), model.PhoneNumber?.Trim(), cancellationToken);
 
             TempData["Message"] = "Details updated.";
             return RedirectToAction("Profile");
@@ -267,7 +284,7 @@ namespace TMVisualsWebApp.Controllers
                 executed.ExceptionHandled = true;
                 executed.Result = Challenge();
             }
-            else if (executed.Exception is SupabaseApiException or HttpRequestException or JsonException or InvalidOperationException)
+            else if (executed.Exception is SupabaseApiException or SupabaseDataException or HttpRequestException or JsonException or InvalidOperationException)
             {
                 _logger.LogError(executed.Exception,"Could not load shared client booking data.");
                 executed.ExceptionHandled = true;

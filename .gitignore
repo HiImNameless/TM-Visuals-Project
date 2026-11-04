@@ -23,4 +23,5 @@
 **TM-VISUALS.Tests
 *docs
 **TM-Visuals-Flutter-App/test/
-**supabase/migrations/
+**supabase/migrations/*
+!supabase/migrations/20261104204723_calendar_time_blocks.sql

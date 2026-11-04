@@ -166,6 +166,13 @@ namespace TMVisualsWebApp.Controllers
             {
                 return Challenge();
             }
+            catch (SupabaseApiException error) when (
+                error.Code == "P0001" && error.DatabaseMessage == "Client profile not found")
+            {
+                ModelState.AddModelError(string.Empty,
+                    "This account does not have a client profile. Sign in with a client account to make a booking.");
+                return View(booking);
+            }
             catch (SupabaseApiException error) when (error.Code is "P0001" or "23514" or "23P01")
             {
                 ModelState.AddModelError(

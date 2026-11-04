@@ -62,7 +62,8 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<SupabaseApiClient>();
 builder.Services.AddScoped<SupabaseBookingService>();
 builder.Services.AddScoped<BookingAvailabilityService>();
-builder.Services.AddSingleton<ProfileStore>();
+builder.Services.AddHttpClient("SupabaseData");
+builder.Services.AddScoped<SupabaseDataService>();
 
 var app = builder.Build();
 
