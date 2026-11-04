@@ -20,32 +20,43 @@ namespace TMVisualsWebApp.Controllers
         private readonly ILogger<BookingController> _logger;
         private readonly BookingAvailabilityService _availability;
         private readonly ServicesCatalogService _services;
+        private readonly SupabaseBookingService _bookings;
 
         public BookingController(
             IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
             ILogger<BookingController> logger,
             BookingAvailabilityService availability,
-            ServicesCatalogService services)
+            ServicesCatalogService services,
+            SupabaseBookingService bookings)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _logger = logger;
             _availability = availability;
             _services = services;
+            _bookings = bookings;
         }
 
         // Availability must always be fresh, so it never let a browser or proxy cache it.
         [HttpGet]
         [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-        public IActionResult Availability(int year, int month)
+        public async Task<IActionResult> Availability(int year, int month, CancellationToken cancellationToken)
         {
             if (year < 2000 || year > 2100 || month < 1 || month > 12)
             {
                 return BadRequest();
             }
 
-            return Json(new { days = _availability.GetMonth(year, month) });
+            try
+            {
+                return Json(new { days = await _availability.GetMonthAsync(year, month, cancellationToken) });
+            }
+            catch (Exception error) when (error is HttpRequestException or SupabaseApiException or InvalidOperationException or JsonException)
+            {
+                _logger.LogError(error,"Could not load shared calendar availability.");
+                return StatusCode(503, new { error = "Availability is temporarily unavailable. Please retry." });
+            }
         }
 
         [Authorize]
@@ -94,7 +105,7 @@ namespace TMVisualsWebApp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize] //If Google sign-in populates the users and client tables then add (Roles = "Client") to the Authorize attribute to restrict bookings to signed-in clients only.
-        public IActionResult CreateBooking(
+        public async Task<IActionResult> CreateBooking(
             [Bind(
                 nameof(Booking.Name),
                 nameof(Booking.Phone),
@@ -147,13 +158,27 @@ namespace TMVisualsWebApp.Controllers
                 return Forbid();
             }
             booking.UserId = userId;
-            if (!_availability.TryReserve(booking))
+            try
+            {
+                booking.Id = await _bookings.CreateAsync(booking, HttpContext.RequestAborted);
+            }
+            catch (SupabaseSignInRequiredException)
+            {
+                return Challenge();
+            }
+            catch (SupabaseApiException error) when (error.Code is "P0001" or "23514" or "23P01")
             {
                 ModelState.AddModelError(
                     nameof(booking.Date),
                     "That time is no longer available. " +
-                    "Please choose another time or date.");
+                    "Please refresh the calendar and choose another time. Use available slot boundaries (normally every 30 minutes).");
 
+                return View(booking);
+            }
+            catch (Exception error) when (error is HttpRequestException or SupabaseApiException or InvalidOperationException or JsonException)
+            {
+                _logger.LogError(error,"Could not submit the booking request.");
+                ModelState.AddModelError(string.Empty,"We could not confirm the booking request. Check My Profile before trying again.");
                 return View(booking);
             }
            
@@ -175,8 +200,16 @@ namespace TMVisualsWebApp.Controllers
                 return RedirectToAction(nameof(CreateBooking));
             }
 
-            var model =
-                JsonSerializer.Deserialize<BookingConfirmationViewModel>(json);
+            BookingConfirmationViewModel? model;
+            try
+            {
+                model = JsonSerializer.Deserialize<BookingConfirmationViewModel>(json);
+            }
+            catch (JsonException)
+            {
+                TempData.Remove("BookingConfirmation");
+                return RedirectToAction(nameof(CreateBooking));
+            }
 
             if (model is null)
             {

@@ -254,7 +254,9 @@ namespace TMVisualsWebApp.Controllers
                     cancellationToken: cancellationToken);
             if (result?.User?.Id is not string userId ||
                 string.IsNullOrWhiteSpace(userId) ||
-                string.IsNullOrWhiteSpace(result.User.Email))
+                string.IsNullOrWhiteSpace(result.User.Email) ||
+                string.IsNullOrWhiteSpace(result.AccessToken) ||
+                string.IsNullOrWhiteSpace(result.RefreshToken) || result.ExpiresIn <= 0)
             {
                 TempData["AuthMessage"] =
                     "Google sign-in could not be completed. Please try again.";
@@ -264,7 +266,7 @@ namespace TMVisualsWebApp.Controllers
             await SignInUserAsync(
                 userId,
                 result.User.Email,
-                rememberMe: false);
+                rememberMe: false, result);
             TempData["Success"] = "You're now signed in.";
             return RedirectToAction("Index", "Home");
         }//End of GoogleCallback method
@@ -439,7 +441,9 @@ namespace TMVisualsWebApp.Controllers
                     .ReadFromJsonAsync<SupabaseLoginResponse>();
 
                 if (result?.User?.Id is not string userId ||
-                    string.IsNullOrWhiteSpace(userId))
+                    string.IsNullOrWhiteSpace(userId) ||
+                    string.IsNullOrWhiteSpace(result.AccessToken) ||
+                    string.IsNullOrWhiteSpace(result.RefreshToken) || result.ExpiresIn <= 0)
                 {
                     ModelState.AddModelError(string.Empty, "Unable to complete sign-in.");
                     return View(model);
@@ -448,7 +452,7 @@ namespace TMVisualsWebApp.Controllers
                 await SignInUserAsync(
                     userId,
                     result.User.Email ?? model.Email,
-                    model.RememberMe);
+                    model.RememberMe, result);
 
                 TempData["Success"] = "Welcome back! You're now signed in.";
                 return RedirectToAction("Index", "Home");
@@ -470,7 +474,7 @@ namespace TMVisualsWebApp.Controllers
         private async Task SignInUserAsync(
             string userId,
             string email,
-            bool rememberMe)
+            bool rememberMe, SupabaseLoginResponse session)
         {
             var claims = new List<Claim>
             {
@@ -483,15 +487,20 @@ namespace TMVisualsWebApp.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme);
             var principal = new ClaimsPrincipal(identity);
 
+            var properties = new AuthenticationProperties
+            {
+                IsPersistent = rememberMe,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(rememberMe ? 24 : 2)
+            };
+            properties.StoreTokens([
+                new() { Name="access_token", Value=session.AccessToken ?? string.Empty },
+                new() { Name="refresh_token", Value=session.RefreshToken ?? string.Empty },
+                new() { Name="expires_at", Value=DateTimeOffset.UtcNow.AddSeconds(session.ExpiresIn).ToString("O", System.Globalization.CultureInfo.InvariantCulture) },
+            ]);
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal,
-                new AuthenticationProperties
-                {
-                    IsPersistent = rememberMe,
-                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(
-                        rememberMe ? 24 : 2)
-                });
+                properties);
         }
 
 
@@ -559,6 +568,12 @@ namespace TMVisualsWebApp.Controllers
 
         private sealed class SupabaseLoginResponse
         {
+            [JsonPropertyName("access_token")]
+            public string? AccessToken { get; set; }
+            [JsonPropertyName("refresh_token")]
+            public string? RefreshToken { get; set; }
+            [JsonPropertyName("expires_in")]
+            public int ExpiresIn { get; set; }
             [JsonPropertyName("user")]
             public SupabaseUser? User { get; set; }
         }

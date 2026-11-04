@@ -112,7 +112,8 @@ class _CalendarBody extends StatelessWidget {
                   final status = vm.status(date);
                   final color = switch (status) {
                     'Unavailable' => unavailableDayColor,
-                    'Reserved' => adminGold,
+                    'Fully booked' => adminGold,
+                    'Partly available' => const Color(0xFF9A5B15),
                     'Available' => const Color(0xFF236B43),
                     _ => const Color(0xFF343434),
                   };
@@ -126,7 +127,7 @@ class _CalendarBody extends StatelessWidget {
                         style: OutlinedButton.styleFrom(
                           padding: EdgeInsets.zero,
                           backgroundColor: color,
-                          foregroundColor: status == 'Reserved'
+                          foregroundColor: status == 'Fully booked'
                               ? Colors.black
                               : Colors.white,
                           side: BorderSide(
@@ -152,7 +153,8 @@ class _CalendarBody extends StatelessWidget {
                 runSpacing: 8,
                 children: [
                   _Legend('Available', Color(0xFF236B43)),
-                  _Legend('Reserved', adminGold),
+                  _Legend('Fully booked', adminGold),
+                  _Legend('Partly available', Color(0xFF9A5B15)),
                   _Legend('Unavailable day', unavailableDayColor),
                 ],
               ),

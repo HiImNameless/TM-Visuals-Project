@@ -228,13 +228,14 @@
         <div class="form-grid">
             <div class="field">
                 <label asp-for="StartTime"></label>
-                <input asp-for="StartTime" type="time" class="booking-input" />
+                <input asp-for="StartTime" type="time" step="60" list="bookingTimeOptions" min="06:00" max="21:00" class="booking-input" />
                 <span asp-validation-for="StartTime" class="field-validation-error"></span>
             </div>
 
             <div class="field">
                 <label asp-for="FinishTime"></label>
-                <input asp-for="FinishTime" type="time" class="booking-input" />
+                <input asp-for="FinishTime" type="time" step="60" list="bookingTimeOptions" min="07:00" max="22:00" class="booking-input" />
+                <datalist id="bookingTimeOptions"></datalist>
                 <span asp-validation-for="FinishTime" class="field-validation-error"></span>
             </div>
         </div>
@@ -359,6 +360,7 @@
             const availabilityNotice = document.getElementById("availabilityNotice");
             const startInput = document.getElementById("StartTime");
             const finishInput = document.getElementById("FinishTime");
+            const timeOptions = document.getElementById("bookingTimeOptions");
             const timeConflict = document.getElementById("timeConflict");
             const bookingForm = document.getElementById("bookingForm");
 
@@ -438,12 +440,19 @@
 
                 if (!info) {
                     dayAvailabilityPanel.hidden = true;
+                    timeOptions.replaceChildren();
                     return;
                 }
 
                 dayAvailabilityPanel.hidden = false;
                 fillChips(freeList, info.free, "None");
                 fillChips(busyList, info.busy, "Nothing booked yet");
+                const choices = [...new Set(info.free.flatMap(slot => slot.boundaries || [slot.from, slot.to]))].sort();
+                timeOptions.replaceChildren(...choices.map(value => {
+                    const option = document.createElement("option");
+                    option.value = value;
+                    return option;
+                }));
             }
 
             function checkTimes() {
@@ -469,13 +478,13 @@
                 }
 
                 const fits = info.free.some(function (slot) {
-                    return start >= slot.from && finish <= slot.to;
+                    return start >= slot.from && finish <= slot.to &&
+                        (!slot.boundaries || (slot.boundaries.includes(start) && slot.boundaries.includes(finish)));
                 });
 
                 if (!fits) {
                     timeConflict.textContent =
-                        "That time overlaps an existing booking or is outside working hours. " +
-                        "Please choose from the available windows shown above.";
+                        "That time cannot be booked. Choose an available start and finish time from the windows shown above.";
                     return false;
                 }
 

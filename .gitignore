@@ -9,9 +9,18 @@
 **/bin/
 **/obj/
 
+# Local calendar test backend and its generated test credentials
+.calendar-sandbox/
+
 
 *.cmake
 *.cc
 *.cmake
 *.swift
-/TM-Visuals-ASPNET-Website/Services/SupabaseBookingService.cs
+
+# TEMP
+**database-tests
+**TM-VISUALS.Tests
+*docs
+**TM-Visuals-Flutter-App/test/
+**supabase/migrations/

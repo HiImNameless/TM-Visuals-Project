@@ -2,7 +2,7 @@
 {
     public class BookingConfirmationViewModel
     {
-        public int BookingId { get; set; }
+        public Guid BookingId { get; set; }
 
         public string Name { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;

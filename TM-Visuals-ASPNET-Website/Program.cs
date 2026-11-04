@@ -58,8 +58,10 @@ builder.Services.AddHttpClient("photon", client =>
 });
 
 //availability and booking store
-builder.Services.AddSingleton<BookingStore>();
-builder.Services.AddSingleton<BookingAvailabilityService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient<SupabaseApiClient>();
+builder.Services.AddScoped<SupabaseBookingService>();
+builder.Services.AddScoped<BookingAvailabilityService>();
 builder.Services.AddSingleton<ProfileStore>();
 
 var app = builder.Build();

@@ -7,6 +7,7 @@ using TMVisualsWebApp.Models;
 using TMVisualsWebApp.Services;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace TMVisualsWebApp.Controllers
 {
@@ -15,7 +16,7 @@ namespace TMVisualsWebApp.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly PortfolioCatalogService _portfolioCatalog;
         private readonly ServicesCatalogService _servicesCatalog;
-        private readonly BookingStore _store;
+        private readonly SupabaseBookingService _bookings;
         private readonly InvoiceCatalogService _invoiceCatalog;
 
 
@@ -26,14 +27,14 @@ namespace TMVisualsWebApp.Controllers
             ILogger<HomeController> logger,
             PortfolioCatalogService portfolioCatalog,
             ServicesCatalogService servicesCatalog,
-            BookingStore store,
+            SupabaseBookingService bookings,
             InvoiceCatalogService invoiceCatalog,
             ProfileStore profiles)
         {
             _logger = logger;
             _portfolioCatalog = portfolioCatalog;
             _servicesCatalog = servicesCatalog;
-            _store = store;
+            _bookings = bookings;
             _invoiceCatalog = invoiceCatalog;
             _profiles = profiles;
         }
@@ -103,8 +104,7 @@ namespace TMVisualsWebApp.Controllers
         {
             var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
 
-            var myBookings = _store.All()
-                .Where(b => string.Equals(b.Email, email, StringComparison.OrdinalIgnoreCase))
+            var myBookings = (await _bookings.FetchMineAsync(cancellationToken: cancellationToken))
                 .OrderByDescending(b => b.Date)
                 .ToList();
 
@@ -160,13 +160,9 @@ namespace TMVisualsWebApp.Controllers
         }
 
         [Authorize]
-        public IActionResult BookingStatus(int id)
+        public async Task<IActionResult> BookingStatus(Guid id, CancellationToken cancellationToken)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
-
-            var booking = _store.All().FirstOrDefault(b =>
-                b.Id == id &&
-                string.Equals(b.Email, email, StringComparison.OrdinalIgnoreCase));
+            var booking = (await _bookings.FetchMineAsync(id,cancellationToken)).SingleOrDefault();
 
             if (booking == null)
             {
@@ -179,13 +175,16 @@ namespace TMVisualsWebApp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CancelBooking(int id)
+        public async Task<IActionResult> CancelBooking(Guid id, CancellationToken cancellationToken)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
-
-            if (!_store.Cancel(id, email))
+            try
             {
-                return NotFound();
+                await _bookings.CancelAsync(id,cancellationToken);
+            }
+            catch (SupabaseApiException error) when (error.Code == "P0001")
+            {
+                TempData["BookingError"] = "This booking could not be cancelled. Its status may have changed.";
+                return RedirectToAction(nameof(BookingStatus),new {id});
             }
 
             return RedirectToAction(nameof(CancellationNotification));
@@ -205,13 +204,10 @@ namespace TMVisualsWebApp.Controllers
 
         // REPLACE MyContent() with:
         [Authorize]
-        public IActionResult MyContent()
+        public async Task<IActionResult> MyContent(CancellationToken cancellationToken)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
-
-            var items = _store.All()
-                .Where(b => string.Equals(b.Email, email, StringComparison.OrdinalIgnoreCase)
-                         && b.Status == "Confirmed" && b.Date.HasValue)
+            var items = (await _bookings.FetchMineAsync(cancellationToken: cancellationToken))
+                .Where(b => b.Status is "Confirmed" or "Completed" && b.Date.HasValue)
                 .OrderByDescending(b => b.Date)
                 .Select(b => new ClientContent(b))
                 .ToList();
@@ -221,12 +217,11 @@ namespace TMVisualsWebApp.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult EditDetails()
+        public async Task<IActionResult> EditDetails(CancellationToken cancellationToken)
         {
             var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
 
-            var latest = _store.All()
-                .Where(b => string.Equals(b.Email, email, StringComparison.OrdinalIgnoreCase))
+            var latest = (await _bookings.FetchMineAsync(cancellationToken: cancellationToken))
                 .OrderByDescending(b => b.Date)
                 .FirstOrDefault();
 
@@ -262,6 +257,23 @@ namespace TMVisualsWebApp.Controllers
 
             TempData["Message"] = "Details updated.";
             return RedirectToAction("Profile");
+        }
+
+        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+        {
+            var executed = await next();
+            if (executed.Exception is SupabaseSignInRequiredException)
+            {
+                executed.ExceptionHandled = true;
+                executed.Result = Challenge();
+            }
+            else if (executed.Exception is SupabaseApiException or HttpRequestException or JsonException or InvalidOperationException)
+            {
+                _logger.LogError(executed.Exception,"Could not load shared client booking data.");
+                executed.ExceptionHandled = true;
+                Response.StatusCode = 503;
+                executed.Result = View("Error",new ErrorViewModel { RequestId=HttpContext.TraceIdentifier });
+            }
         }
 
 

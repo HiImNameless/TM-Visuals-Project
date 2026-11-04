@@ -7,7 +7,7 @@ namespace TMVisualsWebApp.Models
 {
     public class Booking
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public Guid? UserId { get; set; }
 
         [Required(ErrorMessage = "Please select a service.")]

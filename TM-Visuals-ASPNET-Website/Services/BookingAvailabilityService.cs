@@ -1,182 +1,38 @@
-﻿using TMVisualsWebApp.Models;
+using System.Globalization;
+using System.Text.Json;
 
-namespace TMVisualsWebApp.Services
+namespace TMVisualsWebApp.Services;
+
+public record TimeWindow(string From, string To, List<string>? Boundaries = null);
+public record DayAvailability(string Status, List<TimeWindow> Busy, List<TimeWindow> Free);
+
+public sealed class BookingAvailabilityService(SupabaseApiClient api)
 {
-   
-        public record TimeWindow(string From, string To);
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
-        /// <param name="Status">"available", "partial", "full" or "blocked"</param>
-        public record DayAvailability(string Status, List<TimeWindow> Busy, List<TimeWindow> Free);
-
-        public class BookingAvailabilityService
+    public async Task<Dictionary<string, DayAvailability>> GetMonthAsync(
+        int year, int month, CancellationToken cancellationToken = default)
+    {
+        var first = new DateTime(year, month, 1);
+        var last = first.AddMonths(1).AddDays(-1);
+        var rows = await api.RpcAsync("get_calendar_availability", new {
+            p_start_date = first.ToString("yyyy-MM-dd",CultureInfo.InvariantCulture),
+            p_end_date = last.ToString("yyyy-MM-dd",CultureInfo.InvariantCulture),
+        }, cancellationToken: cancellationToken);
+        var days = new Dictionary<string, DayAvailability>();
+        foreach (var row in rows.EnumerateArray())
         {
-            // Adjust these to match how you actually work.
-            private static readonly TimeSpan Opening = TimeSpan.FromHours(6);
-            private static readonly TimeSpan Closing = TimeSpan.FromHours(22);
-            private static readonly TimeSpan Buffer = TimeSpan.FromMinutes(60);        // travel time either side
-            private static readonly TimeSpan MinimumSession = TimeSpan.FromHours(1);
-
-            // A new booking is "Pending" and only holds its slot for this long.
-            // If it is not confirmed in time, the slot opens up again.
-            public static readonly TimeSpan PendingWindow = TimeSpan.FromMinutes(30);
-
-            // South Africa is UTC+2 year-round (same approach as BookingController).
-            private static readonly TimeSpan SastOffset = TimeSpan.FromHours(2);
-            private static DateTime NowSast => DateTime.UtcNow + SastOffset;
-
-            private readonly BookingStore _store;
-            private readonly object _reserveLock = new();
-
-            public BookingAvailabilityService(BookingStore store)
-            {
-                _store = store;
-            }
-
-            public Dictionary<string, DayAvailability> GetMonth(int year, int month)
-            {
-                var result = new Dictionary<string, DayAvailability>();
-
-                for (var day = 1; day <= DateTime.DaysInMonth(year, month); day++)
-                {
-                    var date = new DateTime(year, month, day);
-                    result[date.ToString("yyyy-MM-dd")] = GetDay(date);
-                }
-
-                return result;
-            }
-
-            public DayAvailability GetDay(DateTime date)
-            {
-                if (date.Date < NowSast.Date || _store.IsBlocked(date))
-                {
-                    return new DayAvailability("blocked", new(), new());
-                }
-
-                var (busy, free) = Compute(date);
-
-                var status = free.Count == 0 ? "full"
-                           : busy.Count > 0 ? "partial"
-                           : "available";
-
-                return new DayAvailability(
-                    status,
-                    busy.Select(w => new TimeWindow(Fmt(w.From), Fmt(w.To))).ToList(),
-                    free.Select(w => new TimeWindow(Fmt(w.From), Fmt(w.To))).ToList());
-            }
-
-            public bool IsSlotFree(DateTime date, TimeSpan start, TimeSpan finish)
-            {
-                if (finish <= start ||
-                    date.Date < NowSast.Date ||
-                    _store.IsBlocked(date))
-                {
-                    return false;
-                }
-
-                return Compute(date).Free.Any(w => start >= w.From && finish <= w.To);
-            }
-
-            /// <summary>
-            /// Checks the slot and saves the booking as one step, so two people
-            /// submitting at the same moment cannot both get the same time.
-            /// </summary>
-            public bool TryReserve(Booking booking)
-            {
-            
-
-                if (booking.Date is null ||
-                    booking.StartTime is null ||
-                    booking.FinishTime is null)
-                {
-                    return false;
-                }
-
-                lock (_reserveLock)
-                {
-                    if (!IsSlotFree(
-                            booking.Date.Value,
-                            booking.StartTime.Value,
-                            booking.FinishTime.Value))
-                    {
-                        return false;
-                    }
-             
-
-                booking.CreatedAtUtc = DateTime.UtcNow; 
-                booking.ExpiresAtUtc = ExpiresAtUtc(booking);
-
-                _store.Add(booking);
-                return true;
-                }
-            }
-
-            /// <summary>When a pending booking stops holding its slot.</summary>
-            public static DateTime ExpiresAtUtc(Booking booking) =>
-                booking.CreatedAtUtc + PendingWindow;
-
-        // Pending bookings only block their slot until the window runs out.
-        // Any other status (e.g. Confirmed) keeps blocking it.
-        private static bool BlocksSlot(Booking booking)
-        {
-            if (booking.Status == "Confirmed")
-                return true;
-
-            if (booking.Status == "Pending")
-                return booking.ExpiresAtUtc > DateTimeOffset.UtcNow;
-
-            return false;
+            var key = row.GetProperty("slot_date").GetString()!;
+            var status = row.GetProperty("status").GetString()!;
+            if (status is not ("available" or "partial" or "full" or "blocked"))
+                throw new JsonException("Unexpected calendar state.");
+            days.Add(key,new DayAvailability(status,
+                row.GetProperty("busy").Deserialize<List<TimeWindow>>(Json)!,
+                row.GetProperty("free").Deserialize<List<TimeWindow>>(Json)!));
         }
-
-        private (List<(TimeSpan From, TimeSpan To)> Busy,
-                     List<(TimeSpan From, TimeSpan To)> Free) Compute(DateTime date)
-            {
-                // Each booking blocks its own time plus the buffer on either side.
-                var busy = _store.BookingsOn(date)
-                    .Where(BlocksSlot)
-                    .Select(b => (From: b.StartTime!.Value - Buffer,
-                                  To: b.FinishTime!.Value + Buffer))
-                    .OrderBy(x => x.From)
-                    .ToList();
-
-                // Today: nothing earlier than the current time can be booked.
-                var cursor = date.Date == NowSast.Date
-                    ? Max(Opening, NowSast.TimeOfDay)
-                    : Opening;
-
-                var free = new List<(TimeSpan From, TimeSpan To)>();
-
-                foreach (var (from, to) in busy)
-                {
-                    if (from - cursor >= MinimumSession)
-                    {
-                        free.Add((cursor, from));
-                    }
-
-                    if (to > cursor)
-                    {
-                        cursor = to;
-                    }
-                }
-
-                if (Closing - cursor >= MinimumSession)
-                {
-                    free.Add((cursor, Closing));
-                }
-
-                var shownBusy = busy
-                    .Select(w => (From: Clamp(w.From), To: Clamp(w.To)))
-                    .ToList();
-
-                return (shownBusy, free);
-            }
-
-            private static TimeSpan Max(TimeSpan a, TimeSpan b) => a >= b ? a : b;
-
-            private static TimeSpan Clamp(TimeSpan t) =>
-                t < Opening ? Opening : t > Closing ? Closing : t;
-
-            private static string Fmt(TimeSpan t) => t.ToString(@"hh\:mm");
-        }
-    
+        if (days.Count != last.Day || Enumerable.Range(1,last.Day).Any(day =>
+            !days.ContainsKey(new DateTime(year,month,day).ToString("yyyy-MM-dd",CultureInfo.InvariantCulture))))
+            throw new JsonException("The calendar response did not include the requested month.");
+        return days;
+    }
 }
-
