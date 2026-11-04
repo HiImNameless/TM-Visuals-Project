@@ -26,7 +26,7 @@ class RouteManager {
       clients = '/clients',
       portfolioGallery = '/portfolio-gallery',
       invoices = '/invoices',
-      services ='/services',
+      services = '/services',
       addInvoice = '/add-invoice',
       dateManager = '/date-availability';
   // Register only on the authenticated nested Navigator, never publicly.
@@ -36,9 +36,9 @@ class RouteManager {
   }) {
     final WidgetBuilder builder = switch (settings.name) {
       '/' => (_) => AdminDashboard(),
-calendar => (_) => CalendarScreen(
-  service: CalendarService(supabase: client),
-),
+      calendar => (_) => CalendarScreen(
+        service: CalendarService(supabase: client),
+      ),
       bookings => (_) => const BookingsScreen(),
       profile => (_) => AdminProfileScreen(),
       more => (_) => const AdminMoreScreen(),

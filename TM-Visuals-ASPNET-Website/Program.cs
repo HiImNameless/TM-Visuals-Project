@@ -57,10 +57,13 @@ builder.Services.AddHttpClient("photon", client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("TMVisualsWebApp/1.0");
 });
 
-//availability and booking store
-builder.Services.AddSingleton<BookingStore>();
-builder.Services.AddSingleton<BookingAvailabilityService>();
-builder.Services.AddSingleton<ProfileStore>();
+// Bookings, calendar and profiles live in the Supabase database. The data
+// service calls it as the signed-in user, using the token the session
+// service keeps in the sign-in cookie.
+
+builder.Services.AddHttpClient("SupabaseData");
+builder.Services.AddScoped<SupabaseSessionService>();
+builder.Services.AddScoped<SupabaseDataService>();
 
 var app = builder.Build();
 
@@ -76,10 +79,10 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 //Middleware Pipeline
 app.MapGet("/todos", async (Supabase.Client supabase) =>
 {
-        await supabase.InitializeAsync();
-        var response = await supabase.From<Todo>().Get();
-        return response.Models;
-    });
+    await supabase.InitializeAsync();
+    var response = await supabase.From<Todo>().Get();
+    return response.Models;
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

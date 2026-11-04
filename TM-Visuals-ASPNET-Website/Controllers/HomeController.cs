@@ -1,12 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Security.Claims;
 using System.Text.Json;
 using TMVisualsWebApp.Models;
 using TMVisualsWebApp.Services;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace TMVisualsWebApp.Controllers
 {
@@ -15,35 +13,42 @@ namespace TMVisualsWebApp.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly PortfolioCatalogService _portfolioCatalog;
         private readonly ServicesCatalogService _servicesCatalog;
-        private readonly BookingStore _store;
         private readonly InvoiceCatalogService _invoiceCatalog;
-
-
-
-        private readonly ProfileStore _profiles;
+        private readonly SupabaseDataService _data;
+        private readonly SupabaseSessionService _session;
 
         public HomeController(
             ILogger<HomeController> logger,
             PortfolioCatalogService portfolioCatalog,
             ServicesCatalogService servicesCatalog,
-            BookingStore store,
             InvoiceCatalogService invoiceCatalog,
-            ProfileStore profiles)
+            SupabaseDataService data,
+            SupabaseSessionService session)
         {
             _logger = logger;
             _portfolioCatalog = portfolioCatalog;
             _servicesCatalog = servicesCatalog;
-            _store = store;
             _invoiceCatalog = invoiceCatalog;
-            _profiles = profiles;
+            _data = data;
+            _session = session;
         }
+
+        private bool TryGetUserId(out Guid userId) =>
+            Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out userId);
+
+        // Problems reaching or reading Supabase, as opposed to bugs.
+        private static bool IsDataError(Exception error) =>
+            error is HttpRequestException or
+            SupabaseDataException or
+            InvalidOperationException or
+            JsonException;
 
         public IActionResult Index()
         {
             return View();
         }
 
-       
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
@@ -103,34 +108,53 @@ namespace TMVisualsWebApp.Controllers
         {
             var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
 
-            var myBookings = _store.All()
-                .Where(b => string.Equals(b.Email, email, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(b => b.Date)
-                .ToList();
+            if (!TryGetUserId(out var userId))
+            {
+                return Forbid();
+            }
 
-            var first = myBookings.FirstOrDefault();
+            // Signed in before tokens were stored, or the session expired.
+            var accessToken = await _session.GetAccessTokenAsync(HttpContext, cancellationToken);
+            if (accessToken is null)
+            {
+                return Challenge();
+            }
+
+            var myBookings = new List<Booking>();
+            SupabaseProfile? saved = null;
+            try
+            {
+                myBookings = (await _data.GetMyBookingsAsync(accessToken, userId, cancellationToken))
+                    .OrderByDescending(b => b.Date)
+                    .ToList();
+                saved = await _data.GetMyProfileAsync(accessToken, userId, cancellationToken);
+            }
+            catch (Exception error) when (IsDataError(error))
+            {
+                _logger.LogError(error, "Could not load the profile and bookings for {Email}.", email);
+                TempData["BookingsError"] = "Your bookings are temporarily unavailable.";
+            }
+
             IReadOnlyList<InvoiceDownload> invoices;
             try
             {
-                invoices = await _invoiceCatalog.FetchForClientAsync(email, cancellationToken);
+                invoices = await _invoiceCatalog.FetchForClientAsync(
+                    email, cancellationToken, accessToken);
             }
-            catch (Exception error) when (
-                error is HttpRequestException ||
-                error is InvalidOperationException ||
-                error is JsonException)
+            catch (Exception error) when (IsDataError(error))
             {
                 _logger.LogError(error, "Could not load invoices for {Email}.", email);
                 invoices = Array.Empty<InvoiceDownload>();
                 TempData["InvoiceError"] = "Invoices are temporarily unavailable.";
             }
 
-            var saved = _profiles.Get(email);
-
             var user = new UserProfile
             {
-                FullName = saved.Name ?? first?.Name ?? email.Split('@')[0],
+                FullName = saved?.FullName is { Length: > 0 } name
+                    ? name
+                    : email.Split('@')[0],
                 Email = email,
-                PhoneNumber = saved.Phone ?? first?.Phone,
+                PhoneNumber = saved?.Phone,
                 Bookings = myBookings,
                 Invoices = invoices.ToList()
             };
@@ -144,7 +168,15 @@ namespace TMVisualsWebApp.Controllers
             CancellationToken cancellationToken)
         {
             var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
-            var invoice = (await _invoiceCatalog.FetchForClientAsync(email, cancellationToken))
+
+            var accessToken = await _session.GetAccessTokenAsync(HttpContext, cancellationToken);
+            if (accessToken is null)
+            {
+                return Challenge();
+            }
+
+            var invoice = (await _invoiceCatalog.FetchForClientAsync(
+                    email, cancellationToken, accessToken))
                 .FirstOrDefault(item => string.Equals(item.Id, id, StringComparison.Ordinal));
 
             if (invoice == null)
@@ -155,18 +187,38 @@ namespace TMVisualsWebApp.Controllers
             var downloadUrl = await _invoiceCatalog.CreateSignedDownloadUrlAsync(
                 invoice.FilePath,
                 invoice.Reference,
-                cancellationToken);
+                cancellationToken,
+                accessToken);
             return Redirect(downloadUrl);
         }
 
         [Authorize]
-        public IActionResult BookingStatus(int id)
+        public async Task<IActionResult> BookingStatus(
+            Guid id,
+            CancellationToken cancellationToken)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
+            if (!TryGetUserId(out var userId))
+            {
+                return Forbid();
+            }
 
-            var booking = _store.All().FirstOrDefault(b =>
-                b.Id == id &&
-                string.Equals(b.Email, email, StringComparison.OrdinalIgnoreCase));
+            var accessToken = await _session.GetAccessTokenAsync(HttpContext, cancellationToken);
+            if (accessToken is null)
+            {
+                return Challenge();
+            }
+
+            Booking? booking;
+            try
+            {
+                booking = await _data.GetMyBookingAsync(
+                    accessToken, userId, id, cancellationToken);
+            }
+            catch (Exception error) when (IsDataError(error))
+            {
+                _logger.LogError(error, "Could not load booking {BookingId}.", id);
+                return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            }
 
             if (booking == null)
             {
@@ -179,13 +231,32 @@ namespace TMVisualsWebApp.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult CancelBooking(int id)
+        public async Task<IActionResult> CancelBooking(
+            Guid id,
+            CancellationToken cancellationToken)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
-
-            if (!_store.Cancel(id, email))
+            var accessToken = await _session.GetAccessTokenAsync(HttpContext, cancellationToken);
+            if (accessToken is null)
             {
+                return Challenge();
+            }
+
+            try
+            {
+                await _data.CancelBookingAsync(accessToken, id, cancellationToken);
+            }
+            catch (SupabaseDataException error) when (error.StatusCode is >= 400 and < 500)
+            {
+                // Not this user's booking, or it can no longer be cancelled.
+                _logger.LogWarning(
+                    "Booking {BookingId} was not cancelled: {Message}", id, error.Message);
                 return NotFound();
+            }
+            catch (Exception error) when (IsDataError(error))
+            {
+                _logger.LogError(error, "Could not cancel booking {BookingId}.", id);
+                TempData["BookingsError"] = "We couldn't cancel that booking. Please try again.";
+                return RedirectToAction(nameof(Profile));
             }
 
             return RedirectToAction(nameof(CancellationNotification));
@@ -205,13 +276,33 @@ namespace TMVisualsWebApp.Controllers
 
         // REPLACE MyContent() with:
         [Authorize]
-        public IActionResult MyContent()
+        public async Task<IActionResult> MyContent(CancellationToken cancellationToken)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
+            if (!TryGetUserId(out var userId))
+            {
+                return Forbid();
+            }
 
-            var items = _store.All()
-                .Where(b => string.Equals(b.Email, email, StringComparison.OrdinalIgnoreCase)
-                         && b.Status == "Confirmed" && b.Date.HasValue)
+            var accessToken = await _session.GetAccessTokenAsync(HttpContext, cancellationToken);
+            if (accessToken is null)
+            {
+                return Challenge();
+            }
+
+            var bookings = new List<Booking>();
+            try
+            {
+                bookings = await _data.GetMyBookingsAsync(accessToken, userId, cancellationToken);
+            }
+            catch (Exception error) when (IsDataError(error))
+            {
+                _logger.LogError(error, "Could not load the content for the signed-in user.");
+                ViewData["ContentError"] = "Your content is temporarily unavailable.";
+            }
+
+            var items = bookings
+                .Where(b => (b.Status == "Confirmed" || b.Status == "Completed")
+                         && b.Date.HasValue)
                 .OrderByDescending(b => b.Date)
                 .Select(b => new ClientContent(b))
                 .ToList();
@@ -221,22 +312,38 @@ namespace TMVisualsWebApp.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult EditDetails()
+        public async Task<IActionResult> EditDetails(CancellationToken cancellationToken)
         {
             var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
 
-            var latest = _store.All()
-                .Where(b => string.Equals(b.Email, email, StringComparison.OrdinalIgnoreCase))
-                .OrderByDescending(b => b.Date)
-                .FirstOrDefault();
+            if (!TryGetUserId(out var userId))
+            {
+                return Forbid();
+            }
 
-            var saved = _profiles.Get(email);
+            var accessToken = await _session.GetAccessTokenAsync(HttpContext, cancellationToken);
+            if (accessToken is null)
+            {
+                return Challenge();
+            }
+
+            SupabaseProfile? saved = null;
+            try
+            {
+                saved = await _data.GetMyProfileAsync(accessToken, userId, cancellationToken);
+            }
+            catch (Exception error) when (IsDataError(error))
+            {
+                _logger.LogError(error, "Could not load the profile for {Email}.", email);
+            }
 
             var profile = new UserProfile
             {
-                FullName = saved.Name ?? latest?.Name ?? email.Split('@')[0],
+                FullName = saved?.FullName is { Length: > 0 } name
+                    ? name
+                    : email.Split('@')[0],
                 Email = email,
-                PhoneNumber = saved.Phone ?? latest?.Phone
+                PhoneNumber = saved?.Phone
             };
 
             return View(profile);
@@ -244,21 +351,50 @@ namespace TMVisualsWebApp.Controllers
 
         [Authorize]
         [HttpPost]
-        public IActionResult EditDetails(UserProfile model)
+        public async Task<IActionResult> EditDetails(
+            UserProfile model,
+            CancellationToken cancellationToken)
         {
             ModelState.Remove("Bookings");
+            ModelState.Remove("Invoices");
 
             // The email is the login, so always use the one from the cookie
             var email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
             model.Email = email;
             ModelState.Remove("Email");
 
+            if (string.IsNullOrWhiteSpace(model.FullName))
+            {
+                ModelState.AddModelError(nameof(model.FullName), "Please enter your name.");
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
 
-            _profiles.Save(email, model.FullName?.Trim(), model.PhoneNumber?.Trim());
+            var accessToken = await _session.GetAccessTokenAsync(HttpContext, cancellationToken);
+            if (accessToken is null)
+            {
+                return Challenge();
+            }
+
+            try
+            {
+                await _data.UpdateMyProfileAsync(
+                    accessToken,
+                    model.FullName.Trim(),
+                    model.PhoneNumber?.Trim(),
+                    cancellationToken);
+            }
+            catch (Exception error) when (IsDataError(error))
+            {
+                _logger.LogError(error, "Could not update the profile for {Email}.", email);
+                ModelState.AddModelError(
+                    string.Empty,
+                    "We couldn't save your details. Please try again.");
+                return View(model);
+            }
 
             TempData["Message"] = "Details updated.";
             return RedirectToAction("Profile");
@@ -267,5 +403,3 @@ namespace TMVisualsWebApp.Controllers
 
     }
 }
-
-

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
@@ -13,48 +12,110 @@ namespace TMVisualsWebApp.Controllers
     {
         // South Africa is UTC+2 year-round, with no daylight saving.
         private static readonly TimeSpan SastOffset = TimeSpan.FromHours(2);
-        // Keep in step with BookingAvailabilityService.MinimumSession.
+        // A booking must cover at least this much time.
         private static readonly TimeSpan MinimumDuration = TimeSpan.FromHours(1);
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly ILogger<BookingController> _logger;
-        private readonly BookingAvailabilityService _availability;
-        private readonly ServicesCatalogService _services;
+        private readonly SupabaseDataService _data;
+        private readonly SupabaseSessionService _session;
+        private readonly ServicesCatalogService _servicesCatalog;
 
         public BookingController(
             IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
             ILogger<BookingController> logger,
-            BookingAvailabilityService availability,
-            ServicesCatalogService services)
+            SupabaseDataService data,
+            SupabaseSessionService session, 
+            ServicesCatalogService servicesCatalog)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _logger = logger;
-            _availability = availability;
-            _services = services;
+            _data = data;
+            _servicesCatalog = servicesCatalog;
+            _session = session;
         }
 
         // Availability must always be fresh, so it never let a browser or proxy cache it.
+        // The calendar reads the database's time slots (get_booking_calendar).
+        [Authorize]
         [HttpGet]
         [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-        public IActionResult Availability(int year, int month)
+        public async Task<IActionResult> Availability(
+            int year,
+            int month,
+            CancellationToken cancellationToken)
         {
             if (year < 2000 || year > 2100 || month < 1 || month > 12)
             {
                 return BadRequest();
             }
 
-            return Json(new { days = _availability.GetMonth(year, month) });
+            // The database only lets signed-in users read the calendar.
+            var accessToken = await _session.GetAccessTokenAsync(HttpContext, cancellationToken);
+            if (accessToken is null)
+            {
+                return Unauthorized();
+            }
+
+            var first = new DateOnly(year, month, 1);
+            var last = first.AddMonths(1).AddDays(-1);
+
+            try
+            {
+                var slots = await _data.GetCalendarAsync(
+                    accessToken, first, last, cancellationToken);
+                return Json(new { days = BookingCalendar.BuildMonth(year, month, slots) });
+            }
+            catch (Exception error) when (
+     error is HttpRequestException or
+     SupabaseDataException or
+     JsonException or
+     InvalidOperationException or
+     KeyNotFoundException or
+     FormatException)
+            {
+                _logger.LogError(error, "Could not load booking availability.");
+                return StatusCode(StatusCodes.Status503ServiceUnavailable);
+            }
+        }
+
+
+
+
+        //might be deleted 
+        private async Task<List<string>> LoadServicesAsync(
+    CancellationToken cancellationToken)
+        {
+            try
+            {
+                var services = await _servicesCatalog.FetchActiveServiceNamesAsync(
+                    cancellationToken);
+
+                ViewBag.Services = services;
+                return services;
+            }
+            catch (Exception error) when (
+                error is HttpRequestException or
+                JsonException or
+                InvalidOperationException)
+            {
+                _logger.LogError(error, "Could not load active booking services.");
+
+                ViewBag.Services = new List<string>();
+                return new List<string>();
+            }
         }
 
         [Authorize]
         [HttpGet]
-        [Authorize]
-        public IActionResult CreateBooking()
+        public async Task<IActionResult> CreateBooking(
+     CancellationToken cancellationToken)
         {
-            // Don't leave an old confirmation sitting in TempData next to a new booking.
             TempData.Remove("BookingConfirmation");
+
+            await LoadServicesAsync(cancellationToken);
 
             return View(new Booking
             {
@@ -62,39 +123,10 @@ namespace TMVisualsWebApp.Controllers
             });
         }
 
-        // Add: using Microsoft.AspNetCore.Mvc.Filters;
-        public override async Task OnActionExecutionAsync(
-            ActionExecutingContext context, ActionExecutionDelegate next)
-        {
-            if (context.ActionDescriptor.RouteValues["action"] == nameof(CreateBooking))
-            {
-                try
-                {
-                    var items = await _services.FetchActiveServicesAsync(
-                        context.HttpContext.RequestAborted);
-
-                    ViewBag.Services = items
-                        .Select(s => s.Name)
-                        .Where(n => !string.IsNullOrWhiteSpace(n))
-                        .ToList();
-                }
-                catch (Exception ex) when (
-                    ex is HttpRequestException or JsonException or
-                          InvalidOperationException or TaskCanceledException)
-                {
-                    _logger.LogError(ex, "Could not load services.");
-                    ViewBag.Services = new List<string>();
-                }
-            }
-
-            await next();
-        }
-
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize] //If Google sign-in populates the users and client tables then add (Roles = "Client") to the Authorize attribute to restrict bookings to signed-in clients only.
-        public IActionResult CreateBooking(
+        public async Task<IActionResult> CreateBooking(
             [Bind(
                 nameof(Booking.Name),
                 nameof(Booking.Phone),
@@ -105,22 +137,21 @@ namespace TMVisualsWebApp.Controllers
                 nameof(Booking.StartTime),
                 nameof(Booking.FinishTime),
                 nameof(Booking.Location),
+                //nameof(Booking.requirements),
                 nameof(Booking.Latitude),
                 nameof(Booking.Longitude),
                 nameof(Booking.NumberOfPeople),
                 nameof(Booking.Budget),
-                nameof(Booking.Requirements),
                 nameof(Booking.AcceptTerms))]
-            Booking booking)
+            Booking booking,
+            CancellationToken cancellationToken)
         {
-
             // Use the logged-in user's email so the booking shows on their Profile
             booking.Email = User.FindFirstValue(ClaimTypes.Email) ?? string.Empty;
             ModelState.Remove(nameof(Booking.Email));
-
-
+            var activeServices = await LoadServicesAsync(cancellationToken);
             NormalizeBooking(booking);
-            ValidateBooking(booking);
+            ValidateBooking(booking, activeServices);
 
             if (!ModelState.IsValid)
             {
@@ -140,23 +171,116 @@ namespace TMVisualsWebApp.Controllers
                 return View(booking);
             }
 
-            // The status is set by the server, not accepted from the form.
-            booking.Status = "Pending";
             if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
             {
                 return Forbid();
             }
-            booking.UserId = userId;
-            if (!_availability.TryReserve(booking))
-            {
-                ModelState.AddModelError(
-                    nameof(booking.Date),
-                    "That time is no longer available. " +
-                    "Please choose another time or date.");
 
+            // The database books on behalf of the signed-in user, so it needs their
+            // Supabase token. A missing token means they signed in before tokens
+            // were stored, or the session expired: sign in again.
+            var accessToken = await _session.GetAccessTokenAsync(HttpContext, cancellationToken);
+            if (accessToken is null)
+            {
+                return Challenge();
+            }
+
+            // The status is set by the server, not accepted from the form.
+            booking.Status = "Pending";
+            booking.UserId = userId;
+
+            try
+            {
+                var day = DateOnly.FromDateTime(booking.Date!.Value);
+                var daySlots = await _data.GetCalendarAsync(
+                    accessToken, day, day, cancellationToken);
+
+                var chosen = BookingCalendar.Cover(
+                    daySlots,
+                    booking.StartTime!.Value,
+                    booking.FinishTime!.Value);
+
+                if (chosen is null)
+                {
+                    var example = daySlots.FirstOrDefault(slot => slot.Available);
+                    ModelState.AddModelError(
+                        nameof(Booking.Date),
+                        example is null
+                            ? "There are no available times on that date. Please choose another date."
+                            : "Choose start and finish times that line up with the available " +
+                              $"slots, for example {BookingCalendar.Format(example.Start)} to " +
+                              $"{BookingCalendar.Format(example.End)}.");
+
+                    return View(booking);
+                }
+
+                if (chosen.Any(slot => !slot.Available))
+                {
+                    ModelState.AddModelError(
+                        nameof(Booking.Date),
+                        "That time is no longer available. " +
+                        "Please choose another time or date.");
+
+                    return View(booking);
+                }
+
+                var serviceIds = await _data.ResolveServiceIdsAsync(
+                    accessToken,
+                    booking.Service,
+                    cancellationToken);
+
+                // The database stores contact details on the user's profile, not
+                // on the booking, so keep what was typed on the form in the
+                // booking's requirements where the photographer can see it.
+                //var requirements =
+                //  $"Contact name: {booking.Name}\nContact phone: {booking.Phone}";
+                var requirements = string.IsNullOrWhiteSpace(booking.Requirements)
+  ? null
+  : booking.Requirements.Trim();
+
+                booking.Id = await _data.CreateBookingAsync(
+                    accessToken,
+                    new BookingRequest(
+                        chosen.Select(slot => slot.Id).ToList(),
+                        serviceIds,
+                        booking.EventType,
+                        booking.Budget,
+                        requirements,
+                        booking.NumberOfPeople,
+                        booking.Location,
+                        booking.AcceptTerms,
+                        booking.Latitude,
+                        booking.Longitude),
+                    cancellationToken);
+            }
+            catch (SupabaseDataException error) when (error.StatusCode is >= 400 and < 500)
+            {
+                _logger.LogWarning(
+                    "Booking rejected by the database: HTTP {Status}, {Message}",
+                    error.StatusCode,
+                    error.Message);
+
+                ModelState.AddModelError(nameof(Booking.Date), FriendlyBookingError(error.Message));
                 return View(booking);
             }
-           
+            catch (Exception error) when (
+     error is HttpRequestException or
+     SupabaseDataException or
+     JsonException or
+     InvalidOperationException or
+     KeyNotFoundException or
+     FormatException)
+            {
+                _logger.LogError(error, "The booking could not be saved.");
+
+                ModelState.AddModelError(
+                    nameof(Booking.Date),
+                    "We couldn't save your booking right now. Please try again in a moment.");
+                return View(booking);
+            }
+
+            booking.ExpiresAtUtc = DateTimeOffset.UtcNow.AddHours(1);
+
             TempData["BookingConfirmation"] =
                 JsonSerializer.Serialize(BuildConfirmation(booking));
 
@@ -186,14 +310,48 @@ namespace TMVisualsWebApp.Controllers
             return View(model);
         }
 
+        // Turns the database's error text into something a customer can act on.
+        private static string FriendlyBookingError(string message)
+        {
+            if (message.Contains("claimed", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("unavailable", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("active reservation", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("missing", StringComparison.OrdinalIgnoreCase))
+            {
+                return "That time is no longer available. " +
+                       "Please choose another time or date.";
+            }
+
+            if (message.Contains("Client profile not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Your account isn't set up for bookings yet. " +
+                       "Please contact us so we can fix this.";
+            }
+
+            if (message.Contains("Authentication", StringComparison.OrdinalIgnoreCase) ||
+                message.Contains("JWT", StringComparison.OrdinalIgnoreCase))
+            {
+                return "Your session has expired. Please sign out and sign in again.";
+            }
+
+            if (message.Contains("not available right now", StringComparison.OrdinalIgnoreCase))
+            {
+                return message;
+            }
+
+            return "We couldn't save your booking. Please check the details and try again.";
+        }
+
         private BookingConfirmationViewModel BuildConfirmation(Booking booking)
         {
             var typeOfBooking = $"{booking.EventType} - {booking.Service}";
+            var reference = booking.Id.ToString("N")[..8].ToUpperInvariant();
 
             var message = string.Join(
                 "\n",
                 "Hi, I've just submitted a booking and I'd like to discuss the details and pricing.",
                 "[Details]",
+                $"Booking ref: #{reference}",
                 $"Name: {booking.Name}",
                 $"Type of booking: {typeOfBooking}",
                 $"Date: {booking.Date:yyyy-MM-dd}",
@@ -202,12 +360,11 @@ namespace TMVisualsWebApp.Controllers
                 $"Contact number: {booking.Phone}",
                 $"Location: {booking.Location}",
                 $"Number of people: {booking.NumberOfPeople}",
-                $"Requirements: {(string.IsNullOrWhiteSpace(booking.Requirements) ? "None" : booking.Requirements)}",
                 $"Start time: {booking.StartTime:hh\\:mm}",
                 $"Finish time: {booking.FinishTime:hh\\:mm}"
                 );
 
-            //Strips out all non-digit characters from the WhatsApp number, so that it can be used in a wa.me link.
+            // Strips out all non-digit characters from the WhatsApp number, so that it can be used in a wa.me link.
             var number = new string(
                 (_configuration["WhatsApp:BusinessNumber"] ?? string.Empty)
                     .Where(char.IsDigit)
@@ -215,10 +372,10 @@ namespace TMVisualsWebApp.Controllers
 
             var whatsAppUrl = string.Empty;
 
-            if (number.Length == 0)
+            if (number.Length < 8)
             {
                 _logger.LogWarning(
-                    "WhatsApp:BusinessNumber is not configured; WhatsApp link not generated.");
+                    "WhatsApp:BusinessNumber is missing or invalid; WhatsApp link not generated.");
             }
             else
             {
@@ -227,23 +384,22 @@ namespace TMVisualsWebApp.Controllers
             }
 
             return new BookingConfirmationViewModel
-            {        
-                    BookingId = booking.Id,
-                    Name = booking.Name,
-                    Email = booking.Email,
-                    Phone = booking.Phone,
-                    Service = booking.Service,
-                    EventType = booking.EventType,
-                    Date = booking.Date,
-                    StartTime = booking.StartTime,
-                    FinishTime = booking.FinishTime,
-                    Location = booking.Location,
-                    Budget = booking.Budget,
-                    NumberOfPeople = booking.NumberOfPeople,
-                    WhatsAppUrl = whatsAppUrl,
-                    Status = booking.Status
-               
-        };
+            {
+                BookingId = booking.Id,
+                Name = booking.Name,
+                Email = booking.Email,
+                Phone = booking.Phone,
+                Service = booking.Service,
+                EventType = booking.EventType,
+                Date = booking.Date,
+                StartTime = booking.StartTime,
+                FinishTime = booking.FinishTime,
+                Location = booking.Location,
+                Budget = booking.Budget,
+                NumberOfPeople = booking.NumberOfPeople,
+                WhatsAppUrl = whatsAppUrl,
+                Status = booking.Status
+            };
         }
 
         [HttpGet("/Booking/SearchLocations")]
@@ -472,17 +628,23 @@ namespace TMVisualsWebApp.Controllers
             booking.Phone = booking.Phone?.Trim() ?? string.Empty;
             booking.Email = booking.Email?.Trim() ?? string.Empty;
             booking.Location = booking.Location?.Trim() ?? string.Empty;
-            booking.Requirements = string.IsNullOrWhiteSpace(booking.Requirements) ? null : booking.Requirements?.Trim();
-
         }
 
         // ValidateBooking checks the Booking object for additional validation rules that are not covered by data annotations.
-        private void ValidateBooking(Booking booking)
+        private void ValidateBooking(Booking booking, List<string> activeServices)
         {
             // AcceptTerms is validated by the MustBeTrue attribute on Booking.
 
-            if (!string.IsNullOrWhiteSpace(booking.Service) &&
-                !BookingOptions.Services.Contains(booking.Service))
+            if (activeServices.Count == 0)
+            {
+                ModelState.AddModelError(
+                    nameof(booking.Service),
+                    "Services are currently unavailable. Please try again later.");
+            }
+            else if (!string.IsNullOrWhiteSpace(booking.Service) &&
+                     !activeServices.Contains(
+                         booking.Service,
+                         StringComparer.OrdinalIgnoreCase))
             {
                 ModelState.AddModelError(
                     nameof(booking.Service),
@@ -547,7 +709,7 @@ namespace TMVisualsWebApp.Controllers
                         nameof(booking.FinishTime),
                         "Bookings must be at least 1 hour long.");
                 }
-            }            
+            }
         }
     }
 }
