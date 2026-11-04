@@ -55,7 +55,7 @@ namespace TMVisualsWebApp.Models
         [Range(typeof(decimal), "0.01", "99999999", ErrorMessage = "The budget must be greater than R0.")]
         public decimal? Budget { get; set; }
 
-        [Required(ErrorMessage = "Please provide any specific requirements.")]
+       
         [StringLength(1000, ErrorMessage = "The requirements cannot exceed 1000 characters.")]
         public string? Requirements { get; set; }
 
@@ -77,6 +77,7 @@ namespace TMVisualsWebApp.Models
         public string? DeliveryLink { get; set; }
         public DateTime CreatedAtUtc { get; set; }
         public DateTimeOffset ExpiresAtUtc { get; set; }
+        //public string requirements { get; set; } = string.Empty;
 
     }
 }
