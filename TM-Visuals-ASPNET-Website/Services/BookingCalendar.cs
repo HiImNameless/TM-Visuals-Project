@@ -1,13 +1,5 @@
 namespace TMVisualsWebApp.Services
 {
-    public sealed record TimeWindow(string From, string To);
-
-    /// <param name="Status">"available", "partial", "full" or "blocked"</param>
-    public sealed record DayAvailability(
-        string Status,
-        List<TimeWindow> Busy,
-        List<TimeWindow> Free);
-
     /// <summary>
     /// Turns the database's time slots into the JSON the booking page's
     /// calendar already understands, and matches a chosen start and finish

@@ -303,8 +303,9 @@ class _ActionBar extends StatelessWidget {
           'The slots open up again and ${b.displayName} is told. You can add a reason.',
       action: 'Decline request',
     );
-    if (reason != null && context.mounted)
+    if (reason != null && context.mounted) {
       await _report(context, vm.decline(b, reason: reason));
+    }
   }
 
   Future<void> _cancel(BuildContext context, BookingList b) async {
@@ -316,8 +317,9 @@ class _ActionBar extends StatelessWidget {
           'The slots open up again and ${b.displayName} is told. You can add a reason.',
       action: 'Cancel booking',
     );
-    if (reason != null && context.mounted)
+    if (reason != null && context.mounted) {
       await _report(context, vm.cancel(b, reason: reason));
+    }
   }
 
   Future<void> _complete(BuildContext context, BookingList b) async {
