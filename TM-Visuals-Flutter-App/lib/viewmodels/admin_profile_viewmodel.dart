@@ -36,6 +36,7 @@ class AdminProfileViewModel extends ChangeNotifier {
     try {
       final authUser = _supabase.auth.currentUser;
       if (authUser == null) return;
+      bookingAlerts = authUser.userMetadata?['booking_alerts'] as bool? ?? true;
 
       final userData = await _supabase
           .from('users')
@@ -44,7 +45,7 @@ class AdminProfileViewModel extends ChangeNotifier {
           .single();
 
       final profile = AdminUser.fromJson(userData);
-      final activeAdminId = profile.adminId;  
+      final activeAdminId = profile.adminId;
 
       List serviceData = [];
       if (activeAdminId.isNotEmpty) {
@@ -109,9 +110,16 @@ class AdminProfileViewModel extends ChangeNotifier {
     }
   }
 
-  void toggleBookingAlerts(bool value) {
+  Future<void> toggleBookingAlerts(bool value) async {
     bookingAlerts = value;
     notifyListeners();
+    try {
+      await _supabase.auth.updateUser(
+        UserAttributes(data: {'booking_alerts': value}),
+      );
+    } catch (e) {
+      debugPrint('Error saving booking alert preference: $e');
+    }
   }
 
   void changeNav(int index) {

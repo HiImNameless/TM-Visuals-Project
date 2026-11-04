@@ -13,7 +13,7 @@ class AdminTopNav extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final bookingCount = context.select<AdminProfileViewModel?, int>(
-      (vm) => vm?.user?.bookings ?? 0,
+      (vm) => (vm?.bookingAlerts ?? true) ? vm?.user?.bookings ?? 0 : 0,
     );
 
     return AppBar(

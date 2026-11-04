@@ -17,6 +17,7 @@ namespace TMVisualsWebApp.Services
             _configuration = configuration;
         }
 
+
         public async Task<IReadOnlyList<InvoiceDownload>> FetchForClientAsync(
             string email,
             CancellationToken cancellationToken = default,
@@ -95,7 +96,7 @@ namespace TMVisualsWebApp.Services
             var client = _httpClientFactory.CreateClient("SupabaseInvoice");
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                $"{url}/storage/v1/object/sign/{encodedPath}");
+                $"{url}/storage/v1/object/sign/invoices/{encodedPath}");
             AddSupabaseHeaders(request, key, accessToken);
             request.Content = new StringContent(
                 JsonSerializer.Serialize(new { expiresIn = 300 }),
@@ -199,4 +200,3 @@ namespace TMVisualsWebApp.Services
         }
     }
 }
-

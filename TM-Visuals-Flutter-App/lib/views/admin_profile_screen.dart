@@ -338,9 +338,10 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => context.read<AdminProfileViewModel>().fetchAdminProfile(),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<AdminProfileViewModel>().fetchAdminProfile();
+    });
   }
 
   @override
@@ -354,295 +355,318 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     String displayServices = vm.user?.servicesList.join(' > ') ?? '';
     String displayWhatsapp = vm.user?.whatsapp ?? '0833007857';
 
-    int totalBookings = vm.user?.bookings ?? 3;
-    int totalInvoices = vm.user?.invoices ?? 2;
-    int totalContent = vm.user?.contentDone ?? 1;
+    int totalBookings = vm.user?.bookings ?? 0;
+    int totalInvoices = vm.user?.invoices ?? 0;
+    int totalContent = vm.user?.contentDone ?? 0;
 
     Color cardBgColor = const Color(0xFF1E1E1E);
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: const AdminTopNav(),
-      bottomNavigationBar: const AdminBottomNav(currentIndex: 3),  
+      bottomNavigationBar: const AdminBottomNav(currentIndex: 3),
       body: vm.isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : vm.user == null
-        ? Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+          ? const Center(child: CircularProgressIndicator())
+          : vm.user == null
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Your profile could not be loaded.'),
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    onPressed: vm.fetchAdminProfile,
+                    child: const Text('Try again'),
+                  ),
+                ],
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                const Text('Your profile could not be loaded.'),
-                const SizedBox(height: 12),
-                OutlinedButton(
-                  onPressed: vm.fetchAdminProfile,
-                  child: const Text('Try again'),
-                ),
-              ],
-            ),
-          )
-        : ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        children: [
-          // ---------- User Card ----------
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: cardBgColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
+                // ---------- User Card ----------
                 Container(
-                  width: 56,
-                  height: 56,
-                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.amber, width: 2),
+                    color: cardBgColor,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    displayName.isNotEmpty
-                        ? displayName.substring(0, 2).toUpperCase()
-                        : 'TM',
-                    style: const TextStyle(
-                      color: Colors.amber,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        displayName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        displayEmail,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
+                        width: 56,
+                        height: 56,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.amber, width: 2),
                         ),
                         child: Text(
-                          displayRole,
+                          displayName.isNotEmpty
+                              ? displayName.substring(0, 2).toUpperCase()
+                              : 'TM',
                           style: const TextStyle(
                             color: Colors.amber,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              displayName,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              displayEmail,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                displayRole,
+                                style: const TextStyle(
+                                  color: Colors.amber,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-          // ---------- Stats Grid Row ----------
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard('Bookings', totalBookings, cardBgColor),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard('Invoices', totalInvoices, cardBgColor),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'Content Done',
-                  totalContent,
-                  cardBgColor,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // ---------- Business Details Header ----------
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Business Details',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _showEditBottomSheet(
-                  context,
-                  vm,
-                  displayName,
-                  displayBusiness,
-                  displayWhatsapp,
-                ),
-                child: const Text(
-                  'Edit',
-                  style: TextStyle(
-                    color: Colors.amber,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-
-          // ---------- Business Details Block ----------
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: cardBgColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              children: [
-                _buildRowDetail('Business', displayBusiness),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Divider(color: Colors.black54, height: 1),
-                ),
-                _buildRowDetail('Services', displayServices),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
-                  child: Divider(color: Colors.black54, height: 1),
-                ),
-                _buildRowDetail('Whatsapp', displayWhatsapp),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // ---------- Manage Section Header ----------
-          const Text(
-            'Manage',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          // ---------- Manage Settings Actions Block ----------
-          Container(
-            decoration: BoxDecoration(
-              color: cardBgColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Material(
-              color: Colors.transparent, // Keeps your custom card color visible
-              clipBehavior: Clip
-                  .antiAlias, // Ensures ink ripples don't spill outside rounded corners
-              child: Column(
-                children: [
-                  _buildMenuRow(
-                    Icons.lock_outline,
-                    'Change password',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AdminSettingsScreen(),
+                // ---------- Stats Grid Row ----------
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => Navigator.pushNamed(context, '/bookings'),
+                        borderRadius: BorderRadius.circular(10),
+                        child: _buildStatCard(
+                          'Bookings',
+                          totalBookings,
+                          cardBgColor,
                         ),
-                      );
-                    },
-                  ),
-                  const Divider(color: Colors.black54, height: 1),
-                  _buildMenuSwitchRow(
-                    Icons.notifications_none,
-                    'New booking alerts',
-                    vm.bookingAlerts,
-                    (val) {
-                      vm.toggleBookingAlerts(val);
-                    },
-                  ),
-                  const Divider(color: Colors.black54, height: 1),
-                  _buildMenuRow(
-                    Icons.layers_outlined,
-                    'Services & pricing',
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ServiceList(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          // ---------- Logout Action Row ----------
-          GestureDetector(
-            onTap: () async {
-              try {
-                await Supabase.instance.client.auth.signOut();
-
-                if (context.mounted) {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AdminSignInScreen(),
+                      ),
                     ),
-                    (route) => false,
-                  );
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error logging out: $e')),
-                  );
-                }
-              }
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.logout, color: Colors.redAccent, size: 20),
-                SizedBox(width: 8),
-                Text(
-                  'Logout',
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => Navigator.pushNamed(context, '/invoices'),
+                        borderRadius: BorderRadius.circular(10),
+                        child: _buildStatCard(
+                          'Invoices',
+                          totalInvoices,
+                          cardBgColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () =>
+                            Navigator.pushNamed(context, '/portfolio-content'),
+                        borderRadius: BorderRadius.circular(10),
+                        child: _buildStatCard(
+                          'Content Done',
+                          totalContent,
+                          cardBgColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // ---------- Business Details Header ----------
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Business Details',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => _showEditBottomSheet(
+                        context,
+                        vm,
+                        displayName,
+                        displayBusiness,
+                        displayWhatsapp,
+                      ),
+                      child: const Text(
+                        'Edit',
+                        style: TextStyle(
+                          color: Colors.amber,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // ---------- Business Details Block ----------
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: cardBgColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildRowDetail('Business', displayBusiness),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Divider(color: Colors.black54, height: 1),
+                      ),
+                      _buildRowDetail('Services', displayServices),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Divider(color: Colors.black54, height: 1),
+                      ),
+                      _buildRowDetail('Whatsapp', displayWhatsapp),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // ---------- Manage Section Header ----------
+                const Text(
+                  'Manage',
                   style: TextStyle(
-                    color: Colors.redAccent,
+                    color: Colors.white,
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 10),
+                // ---------- Manage Settings Actions Block ----------
+                Container(
+                  decoration: BoxDecoration(
+                    color: cardBgColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Material(
+                    color: Colors
+                        .transparent, // Keeps your custom card color visible
+                    clipBehavior: Clip
+                        .antiAlias, // Ensures ink ripples don't spill outside rounded corners
+                    child: Column(
+                      children: [
+                        _buildMenuRow(
+                          Icons.lock_outline,
+                          'Change password',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const AdminSettingsScreen(),
+                              ),
+                            );
+                          },
+                        ),
+                        const Divider(color: Colors.black54, height: 1),
+                        _buildMenuSwitchRow(
+                          Icons.notifications_none,
+                          'New booking alerts',
+                          vm.bookingAlerts,
+                          (val) {
+                            vm.toggleBookingAlerts(val);
+                          },
+                        ),
+                        const Divider(color: Colors.black54, height: 1),
+                        _buildMenuRow(
+                          Icons.layers_outlined,
+                          'Services & pricing',
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ServiceList(),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // ---------- Logout Action Row ----------
+                GestureDetector(
+                  onTap: () async {
+                    try {
+                      await Supabase.instance.client.auth.signOut();
+
+                      if (context.mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AdminSignInScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error logging out: $e')),
+                        );
+                      }
+                    }
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      // Icon(Icons.logout, color: Colors.redAccent, size: 20),
+                      // SizedBox(width: 8),
+                      // Text(
+                      //   'Logout',
+                      //   style: TextStyle(
+                      //     color: Colors.redAccent,
+                      //     fontSize: 15,
+                      //     fontWeight: FontWeight.bold,
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
               ],
             ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
     );
   }
 
