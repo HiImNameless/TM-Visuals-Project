@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../services/calendar_service.dart';
 import '../viewmodels/date_availability_viewmodel.dart';
 import '../widgets/admin_widgets.dart';
+import '../widgets/blocked_times_editor.dart';
+import '../models/calendar_model.dart';
 
 class DateManagerScreen extends StatelessWidget {
   const DateManagerScreen({
@@ -50,15 +52,37 @@ class _DateManagerBody extends StatelessWidget {
                 DayBookingsPreview(slots: vm.slots),
               const SizedBox(height: 24),
               const Text(
-                'Availability applies to this entire day. Existing bookings stay scheduled when the day is made unavailable.',
+                'Close the whole day or block selected times below. Existing bookings stay scheduled.',
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Date availability'),
+                title: const Text('Available for new bookings'),
                 subtitle: Text(vm.available ? 'Available' : 'Unavailable'),
                 value: vm.available,
                 onChanged: vm.canSave ? vm.setAvailable : null,
               ),
+              const SizedBox(height: 16),
+              BlockedTimesEditor(
+                key: ValueKey(dateKey(vm.date)),
+                ranges: vm.blockedTimes,
+                enabled: vm.canSave && vm.available,
+                onChanged: vm.setBlockedTimes,
+              ),
+              if (!vm.available)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'Saved blocked periods will apply again when this day is reopened.',
+                  ),
+                ),
+              if (vm.overlapsBookings)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'This closure overlaps an existing booking. The booking will remain scheduled.',
+                  ),
+                ),
+              const SizedBox(height: 20),
               if (vm.saveError != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),

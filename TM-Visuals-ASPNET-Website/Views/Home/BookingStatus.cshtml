@@ -3,6 +3,10 @@
     ViewData["Title"] = "Booking Status";
 }
 <div class="booking-page">
+    @if (TempData["BookingError"] is string bookingError)
+    {
+        <p role="alert">@bookingError</p>
+    }
 
     <div class="info-card">
         <h4>Booking Info</h4>
@@ -24,7 +28,7 @@
     </div>
 
     <div class="action-row">
-        @if (Model.Status != "Cancelled")
+        @if (Model.Status is "Pending" or "Confirmed")
         {
             <button type="button" class="action-btn cancel" id="openCancel">Cancel booking</button>
 

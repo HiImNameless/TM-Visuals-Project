@@ -8,7 +8,7 @@ class CalendarViewModel extends ChangeNotifier {
   final CalendarDataSource service;
   DateTime selected;
   List<CalendarSlot> slots = [];
-  Map<String, bool> availability = {};
+  Map<String, CalendarDayAvailability> availability = {};
   bool loading = true, _disposed = false;
   Object? error;
   int _version = 0;
@@ -20,8 +20,13 @@ class CalendarViewModel extends ChangeNotifier {
       slots.where((s) => dateKey(s.date) == dateKey(date)).toList();
   String status(DateTime date) {
     if (loading || error != null) return 'Not loaded';
-    if (availability[dateKey(date)] == false) return 'Unavailable';
-    return forDate(date).any((s) => s.reserved) ? 'Reserved' : 'Available';
+    return switch (availability[dateKey(date)]?.status) {
+      'blocked' => 'Unavailable',
+      'full' => 'Fully booked',
+      'partial' => 'Partly available',
+      'available' => 'Available',
+      _ => 'Not loaded',
+    };
   }
 
   Future<void> load() async {
@@ -36,7 +41,7 @@ class CalendarViewModel extends ChangeNotifier {
       ]);
       if (!_disposed && current == _version) {
         slots = result[0] as List<CalendarSlot>;
-        availability = result[1] as Map<String, bool>;
+        availability = result[1] as Map<String, CalendarDayAvailability>;
       }
     } catch (e) {
       if (!_disposed && current == _version) error = e;

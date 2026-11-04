@@ -1,3 +1,5 @@
+import 'blocked_time_range.dart';
+
 String dateKey(DateTime date) =>
     '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 DateTime businessToday() {
@@ -24,9 +26,14 @@ class CalendarBooking {
     required this.location,
     required this.status,
     required this.selectionStatus,
+    this.holdExpiresAt,
   });
   final String id, client, event, location, status, selectionStatus;
-  bool get active => reservationActive(selectionStatus, status);
+  final DateTime? holdExpiresAt;
+  bool get active =>
+      reservationActive(selectionStatus, status) &&
+      (status.trim().toLowerCase() != 'pending' ||
+          (holdExpiresAt?.isAfter(DateTime.now().toUtc()) ?? false));
 }
 
 class CalendarSlot {
@@ -58,7 +65,19 @@ class CalendarSlot {
         location: b['location'] as String? ?? '',
         status: b['booking_status'] as String? ?? 'unknown',
         selectionStatus: link['selection_status'] as String? ?? 'unknown',
+        holdExpiresAt: DateTime.tryParse(b['hold_expires_at'] as String? ?? ''),
       );
     }).toList(),
   );
+}
+
+class CalendarDayAvailability {
+  const CalendarDayAvailability({
+    required this.available,
+    required this.status,
+    this.blockedTimes = const [],
+  });
+  final bool available;
+  final String status;
+  final List<BlockedTimeRange> blockedTimes;
 }
