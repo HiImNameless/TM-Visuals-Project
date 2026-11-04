@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
 import '../widgets/admin_page_app_bar.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../viewmodels/invoice_list_viewmodel.dart';
 
-class InvoiceListScreen extends StatelessWidget {
+class InvoiceListScreen extends StatefulWidget {
   const InvoiceListScreen({super.key});
+
+  @override
+  State<InvoiceListScreen> createState() => _InvoiceListScreenState();
+}
+
+class _InvoiceListScreenState extends State<InvoiceListScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<InvoiceListViewModel>().loadInvoices();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,60 +61,119 @@ class InvoiceListScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 12),
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: vm.invoices.length,
-                  itemBuilder: (context, index) {
-                    var invoice = vm.invoices[index];
-                    return GestureDetector(
-                      onTap: () {},
-                      child: Container(
-                        margin: EdgeInsets.only(bottom: 8),
-                        padding: EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.amber),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(invoice.reference,
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 12)),
-                                SizedBox(height: 8),
-                                Text('Date Created: ${invoice.dateCreated}',
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 11)),
-                              ],
-                            ),
-                            Text('Click to View',
-                                style: TextStyle(
-                                    color: Colors.white54, fontSize: 9)),
-                          ],
-                        ),
+                if (vm.isLoading)
+                  const Expanded(
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (vm.error != null)
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        'Could not load invoices.',
+                        style: const TextStyle(color: Colors.redAccent),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: vm.invoices.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'No invoices uploaded.',
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: vm.invoices.length,
+                            itemBuilder: (context, index) {
+                              var invoice = vm.invoices[index];
+                              return GestureDetector(
+                                onTap: () async {
+                                  try {
+                                    final uri = await vm.signedInvoiceUrl(
+                                      invoice.filePath,
+                                    );
+                                    await launchUrl(
+                                      uri,
+                                      mode: LaunchMode.externalApplication,
+                                    );
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Could not open invoice: $e',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  margin: EdgeInsets.only(bottom: 8),
+                                  padding: EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.amber),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            invoice.reference,
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          SizedBox(height: 8),
+                                          Text(
+                                            'Date Created: ${invoice.dateCreated}',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Text(
+                                        'Click to View',
+                                        style: TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 9,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                  ),
               ],
             ),
           ),
           SizedBox(height: 16),
           Center(
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () => Navigator.pushNamed(context, '/add-invoice'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
                 foregroundColor: Colors.black,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
-              child: Text('ADD',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text('ADD', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
