@@ -120,7 +120,14 @@ timeline
 
 | Name |
 |---|
-| S Lukhele | | M Bonga | | S Mbasa | | Z Mvimbi | | K Matsane | | KTJ Phatsoane | | MF Mulaudzi | | B Lombaard |
+| S Lukhele | 
+| M Bonga | 
+| S Mbasa | 
+| Z Mvimbi | 
+| K Matsane | 
+KTJ Phatsoane | 
+| MF Mulaudzi | 
+| B Lombaard |
 
 
 <a href="https://github.com/Truce-hash/TM-Visuals-Project/graphs/contributors">
